@@ -143,7 +143,23 @@ body,html{
 /* ═══════════════════════════════════════════════
    GAME SCREEN
    ═══════════════════════════════════════════════ */
-#screen-game{padding:8px;gap:0;overflow:hidden}
+#screen-game{padding:0 8px 8px;gap:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+
+/* Extra top bar — forces scroll to hide mobile address bar */
+.game-top-bar{
+    display:flex;align-items:center;justify-content:space-between;
+    height:40px;padding:0 10px;flex-shrink:0;
+    background:rgba(255,255,255,.15);border-bottom:1.5px dashed #d5c8a8;
+    font-size:.78rem;color:#b0a080;overflow:hidden;white-space:nowrap;
+}
+.game-top-bar .bar-flavor{font-style:italic;opacity:.7}
+.game-top-bar .bar-rules-btn{
+    border:1.5px solid var(--ink-black);background:rgba(255,255,255,.5);border-radius:12px;
+    padding:2px 10px;font-family:inherit;font-size:.75rem;font-weight:bold;cursor:pointer;
+    color:var(--text-brown);white-space:nowrap;
+}
+.game-top-bar .bar-rules-btn:active{transform:scale(.92)}
+
 .game-header{
     display:flex;justify-content:space-between;align-items:center;
     padding:6px 10px;font-size:1rem;background:rgba(255,255,255,.3);
@@ -183,22 +199,25 @@ body,html{
 .pool-count{font-weight:900;font-size:1.1rem;margin-top:8px;text-align:center}
 .pool-last-play{font-size:.85rem;color:#888;text-align:center}
 
-/* Game log */
-.game-log{max-height:48px;overflow-y:auto;width:100%;padding:4px 8px;flex-shrink:0}
-.game-log .log-entry{font-size:.78rem;color:#999;line-height:1.3}
-.game-log .log-entry.important{color:var(--stamp-red);font-weight:bold}
-
 /* Action area */
 .action-area{display:flex;justify-content:space-around;align-items:center;padding:8px 4px;gap:6px;flex-shrink:0;min-height:54px;flex-wrap:wrap}
 .action-area .doodle-btn{flex:1;min-width:0;padding:10px 8px;font-size:1rem;text-align:center}
 
 /* Hand area */
 .hand-area{
-    display:flex;align-items:flex-end;padding:6px 10px 32px;
+    display:flex;align-items:flex-end;padding:6px 10px 12px;
     overflow-x:auto;overflow-y:hidden;flex-shrink:0;min-height:110px;
     -webkit-overflow-scrolling:touch;justify-content:flex-start;
-    padding-bottom:calc(32px + env(safe-area-inset-bottom, 0px));
 }
+
+/* Game log — below hand area */
+.game-log{
+    min-height:80px;max-height:120px;overflow-y:auto;width:100%;padding:6px 10px;flex-shrink:0;
+    background:rgba(255,255,255,.15);border-top:1.5px dashed #d5c8a8;
+    padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
+}
+.game-log .log-entry{font-size:.78rem;color:#999;line-height:1.4}
+.game-log .log-entry.important{color:var(--stamp-red);font-weight:bold}
 .hand-area::-webkit-scrollbar{display:none}
 .hand-area .card{margin-left:var(--card-ml,3px)}
 .hand-area .card:first-child{margin-left:0}
@@ -255,9 +274,21 @@ body,html{
    ═══════════════════════════════════════════════ */
 .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:50;justify-content:center;align-items:center;padding:20px}
 .modal-overlay.active{display:flex}
-.modal-box{background:var(--paper-bg);padding:20px;max-width:340px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:6px 6px 0 rgba(0,0,0,.15)}
+.modal-box{background:var(--paper-bg);padding:20px;max-width:340px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:6px 6px 0 rgba(0,0,0,.15)}
 .modal-box h2{text-align:center;margin-bottom:12px;transform:rotate(-1deg);font-size:1.4rem}
 .rank-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
+
+/* Declare hand preview */
+.declare-hand-preview{
+    margin-top:12px;padding-top:10px;border-top:2px dashed #ccc;
+}
+.declare-hand-label{font-size:.8rem;color:#999;text-align:center;margin-bottom:6px}
+.declare-hand-scroll{
+    display:flex;align-items:flex-end;overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;padding:4px 2px 6px;gap:2px;
+}
+.declare-hand-scroll::-webkit-scrollbar{display:none}
+.declare-hand-scroll .card{transform:none!important;cursor:default;flex-shrink:0}
 .rank-btn{
     border:2px solid var(--ink-black);background:rgba(255,255,255,.7);
     padding:10px 0;font-family:inherit;font-size:1.2rem;font-weight:900;
@@ -460,6 +491,10 @@ body,html{
 
 <!-- ═══════════ SCREEN: GAME ═══════════ -->
 <div id="screen-game" class="screen">
+    <div class="game-top-bar">
+        <span class="bar-flavor">"谁是骗子？也许每个人都是。"</span>
+        <button class="bar-rules-btn" onclick="app.showRules()">📖 规则</button>
+    </div>
     <div class="game-header">
         <div>目标: <span class="declared-rank" id="game-declared-rank">-</span></div>
         <div class="turn-info" id="game-turn-info">等待中</div>
@@ -473,13 +508,13 @@ body,html{
             <div class="pool-last-play" id="pool-last-play"></div>
         </div>
     </div>
-    <div class="game-log" id="game-log"></div>
     <div class="action-area" id="action-area">
         <button class="doodle-btn" id="btn-play" disabled>出牌</button>
         <button class="doodle-btn" id="btn-pass" disabled>过</button>
         <button class="doodle-btn btn-red" id="btn-challenge" disabled>质疑!</button>
     </div>
     <div class="hand-area" id="hand-area"></div>
+    <div class="game-log" id="game-log"></div>
 </div>
 
 <!-- FFA challenge button -->
@@ -502,6 +537,10 @@ body,html{
         <p style="text-align:center;font-size:.9rem;color:#888;margin-bottom:12px;">选择本轮的目标数字</p>
         <div class="rank-grid" id="rank-grid"></div>
         <button class="doodle-btn btn-blue btn-wide" id="btn-declare-confirm" disabled>确认宣言!</button>
+        <div class="declare-hand-preview">
+            <div class="declare-hand-label">👀 你的手牌 ← 左右滑动查看</div>
+            <div class="declare-hand-scroll" id="declare-hand-scroll"></div>
+        </div>
     </div>
 </div>
 
@@ -636,6 +675,24 @@ function showToast(msg, dur=2500){
 function showScreen(name){
     $$('.screen').forEach(s=>s.classList.remove('active'));
     const s=$('screen-'+name); if(s) s.classList.add('active');
+    if(name==='game') _randomFlavor();
+}
+
+const FLAVOR_TEXTS=[
+    '"谁是骗子？也许每个人都是。"',
+    '"真话是最高级的欺骗。"',
+    '"信任，是用来背叛的。"',
+    '"每张牌都可能是谎言。"',
+    '"诚实？那不是这桌的规矩。"',
+    '"你的眼神出卖了你的手牌。"',
+    '"高明的骗子从不说谎。"',
+    '"牌面之下，众生皆骗。"',
+    '"质疑一切，包括你自己。"',
+    '"在这里，真相反而可疑。"',
+];
+function _randomFlavor(){
+    const el=document.querySelector('.bar-flavor');
+    if(el) el.textContent=FLAVOR_TEXTS[Math.floor(Math.random()*FLAVOR_TEXTS.length)];
 }
 
 function sortCards(cards){
@@ -1490,7 +1547,7 @@ class App {
         const sorted=sortCards(hand);
         // Stacking density: 3 tiers
         const nc=sorted.length;
-        const ml=nc<=10?3:nc<=25?-8:-18;
+        const ml=nc<=10?-1:nc<=25?-14:-28;
         area.style.setProperty('--card-ml',ml+'px');
         let h='';
         for(let i=0;i<sorted.length;i++){
@@ -1535,7 +1592,27 @@ class App {
         this.selectedRank=null;
         $$('.rank-btn').forEach(b=>b.classList.remove('selected'));
         $('btn-declare-confirm').disabled=true;
+        // Render hand preview in declare modal
+        this._renderDeclareHandPreview();
         $('modal-declare').classList.add('active');
+    }
+
+    _renderDeclareHandPreview(){
+        const scroll=$('declare-hand-scroll');
+        if(!scroll)return;
+        const hand=this.game?.myHand;
+        if(!hand||!hand.length){scroll.innerHTML='<span style="color:#aaa;font-size:.85rem;">暂无手牌</span>';return;}
+        const sorted=sortCards(hand);
+        let h='';
+        for(const c of sorted){
+            const isRed=RED_SUITS.has(c.suit), isJ=c.rank==='JOKER';
+            const sc=isJ?'card-joker':(isRed?'suit-red':'suit-black');
+            const sym=DECK_COLORS[c.deck]?.symbol||'';
+            const dr=isJ?(c.jokerType==='big'?'大王':'小王'):c.rank;
+            const ds=isJ?'🃏':c.suit;
+            h+=`<div class="card card-sm ${sc}" data-deck="${c.deck}"><span class="card-corner">${sym}</span><span class="card-rank">${dr}</span><span class="card-suit">${ds}</span></div>`;
+        }
+        scroll.innerHTML=h;
     }
 
     selectRank(r){

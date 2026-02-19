@@ -17,7 +17,7 @@
 
 ### 方式一：直接打开
 
-双击 `index.html` 或 `huangdan.html` 打开（部分浏览器可能限制 WebRTC 连接）。
+双击 `index.html`  打开（部分浏览器可能限制 WebRTC 连接）。
 
 ### 方式二：本地静态服务器（推荐）
 
