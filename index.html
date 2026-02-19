@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>骗子博弈 - Liar's Gambit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+    <style>
+/* ═══════════════════════════════════════════════
+   CSS VARIABLES
+   ═══════════════════════════════════════════════ */
+:root {
+    --paper-bg: #F4ECD8;
+    --ink-black: #2C2C2C;
+    --stamp-red: #D32F2F;
+    --marker-blue: #2196F3;
+    --marker-orange: #E8A838;
+    --text-brown: #3A3226;
+    /* Deck colors */
+    --deck-0-color: #B8453A;
+    --deck-0-bg: #FDF5F3;
+    --deck-0-ink: #6B2A24;
+    --deck-1-color: #4A7C96;
+    --deck-1-bg: #F3F7FA;
+    --deck-1-ink: #2C4D5E;
+    --deck-2-color: #6B7F4E;
+    --deck-2-bg: #F5F7F0;
+    --deck-2-ink: #3D4A2B;
+}
+
+/* ═══════════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+body,html{
+    height:100%;width:100%;
+    background-color:var(--paper-bg);
+    background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    font-family:'Patrick Hand','Comic Sans MS','Marker Felt',cursive;
+    color:var(--text-brown);overflow:hidden;touch-action:manipulation;
+}
+
+/* ═══════════════════════════════════════════════
+   HAND-DRAWN UTILITIES
+   ═══════════════════════════════════════════════ */
+.sketch-border{border:3px solid var(--ink-black);border-radius:255px 15px 225px 15px/15px 225px 15px 255px}
+.sketch-border-alt{border:3px solid var(--ink-black);border-radius:15px 225px 15px 255px/225px 15px 255px 15px}
+.marker-underline{border-bottom:4px solid var(--marker-blue);display:inline-block;line-height:.85;padding-bottom:2px}
+
+/* ═══════════════════════════════════════════════
+   SCREEN SYSTEM
+   ═══════════════════════════════════════════════ */
+.screen{display:none;flex-direction:column;height:100dvh;height:100vh;width:100%;padding:12px;position:absolute;top:0;left:0;overflow-y:auto}
+.screen.active{display:flex}
+
+/* ═══════════════════════════════════════════════
+   HOME SCREEN
+   ═══════════════════════════════════════════════ */
+#screen-home{justify-content:center;align-items:center;gap:20px;text-align:center}
+.home-title{font-size:2.8rem;font-weight:900;transform:rotate(-2deg);line-height:1.1;text-shadow:3px 3px 0 rgba(0,0,0,.08)}
+.home-subtitle{font-size:1.3rem;color:var(--stamp-red);transform:rotate(1deg);margin-top:-8px}
+.home-card-deco{font-size:4rem;transform:rotate(-8deg);filter:drop-shadow(2px 2px 0 rgba(0,0,0,.1))}
+.input-sketch{
+    background:rgba(255,255,255,.6);border:2px dashed var(--ink-black);border-radius:8px;
+    padding:12px 16px;font-family:inherit;font-size:1.1rem;color:var(--text-brown);
+    text-align:center;width:220px;outline:none;
+}
+.input-sketch:focus{border-style:solid;background:rgba(255,255,255,.9)}
+.input-sketch::placeholder{color:#aaa}
+.home-actions{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%;max-width:280px}
+.home-join-row{display:flex;gap:8px;width:100%}
+.home-join-row .input-sketch{flex:1;width:auto;text-transform:uppercase;letter-spacing:3px;font-size:1.3rem}
+
+/* ═══════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════ */
+.doodle-btn{
+    background:rgba(255,255,255,.8);border:3px solid var(--ink-black);
+    padding:12px 24px;font-size:1.15rem;font-family:inherit;font-weight:bold;
+    color:var(--text-brown);border-radius:100px 25px 80px 30px/30px 70px 25px 90px;
+    cursor:pointer;transition:all .1s;position:relative;white-space:nowrap;
+}
+.doodle-btn:active{transform:scale(.95) rotate(-2deg);background:#eee}
+.doodle-btn:disabled{opacity:.4;transform:none}
+.doodle-btn.btn-wide{width:100%}
+.doodle-btn.btn-red{background:#ffecf0;color:var(--stamp-red);border-color:var(--stamp-red)}
+.doodle-btn.btn-blue{background:#e8f4fd;color:var(--marker-blue);border-color:var(--marker-blue)}
+.doodle-btn.btn-green{background:#ecf5ec;color:#4a7a47;border-color:#4a7a47}
+.doodle-btn.btn-sm{padding:8px 16px;font-size:.95rem}
+
+/* ═══════════════════════════════════════════════
+   LOBBY SCREEN
+   ═══════════════════════════════════════════════ */
+#screen-lobby{align-items:center;gap:16px;padding-top:20px}
+.lobby-header{font-size:1.6rem;font-weight:900;text-align:center;transform:rotate(-1deg)}
+.lobby-room-info{display:flex;align-items:center;gap:16px;padding:12px;background:rgba(255,255,255,.4);width:100%;max-width:360px}
+.lobby-room-code{font-size:2.2rem;font-weight:900;letter-spacing:5px;color:var(--marker-blue)}
+#lobby-qr{flex-shrink:0}
+#lobby-qr canvas{border-radius:4px}
+.lobby-players{width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3)}
+.lobby-players h3{margin-bottom:8px;transform:rotate(-.5deg)}
+.player-slot{display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px dashed #ccc;font-size:1.1rem}
+.player-slot:last-child{border-bottom:none}
+.player-dot{width:12px;height:12px;border-radius:50%;background:#8BC34A;flex-shrink:0}
+.player-dot.offline{background:#ccc}
+.player-host-badge{font-size:.7rem;background:var(--marker-orange);color:#fff;padding:1px 6px;border-radius:4px;margin-left:4px}
+
+/* Deck selector */
+.deck-selector{width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3);text-align:center}
+.deck-selector h3{margin-bottom:10px;transform:rotate(.5deg)}
+.deck-options{display:flex;justify-content:center;gap:12px}
+.deck-option{
+    width:90px;padding:10px 6px;background:rgba(255,255,255,.6);
+    border:2px dashed var(--ink-black);border-radius:12px;cursor:pointer;
+    text-align:center;transition:all .15s;position:relative;
+}
+.deck-option.selected{
+    border:3px solid var(--ink-black);border-style:solid;
+    background:rgba(255,255,255,.9);transform:scale(1.05) rotate(-2deg);
+    box-shadow:3px 3px 0 rgba(0,0,0,.1);
+}
+.deck-option .deck-num{font-size:1.8rem;font-weight:900;line-height:1}
+.deck-option .deck-count{font-size:.8rem;color:#888;margin-top:2px}
+.deck-option .deck-colors{display:flex;gap:3px;justify-content:center;margin-top:6px}
+.deck-color-dot{width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.2)}
+.deck-selector.disabled{opacity:.5;pointer-events:none}
+.lobby-settings{width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3)}
+.lobby-settings h3{margin-bottom:10px;transform:rotate(-.5deg)}
+.lobby-settings.disabled{opacity:.5;pointer-events:none}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #ccc}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:1rem}
+.setting-mode-btns{display:flex;gap:6px}
+.setting-mode-btn{border:2px solid var(--ink-black);background:rgba(255,255,255,.7);padding:4px 10px;font-family:inherit;font-size:.85rem;font-weight:bold;cursor:pointer;border-radius:6px;transition:all .1s}
+.setting-mode-btn.selected{background:var(--marker-orange);color:#fff;border-color:var(--marker-orange)}
+.toggle-switch{position:relative;width:44px;height:24px;background:#ccc;border-radius:12px;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle-switch.active{background:#8BC34A}
+.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:1px 1px 2px rgba(0,0,0,.15)}
+.toggle-switch.active::after{transform:translateX(20px)}
+.lobby-footer{margin-top:auto;padding:12px 0;width:100%;max-width:360px}
+.lobby-hint{text-align:center;font-size:.9rem;color:#999;margin-top:8px}
+
+/* ═══════════════════════════════════════════════
+   GAME SCREEN
+   ═══════════════════════════════════════════════ */
+#screen-game{padding:8px;gap:0;overflow:hidden}
+.game-header{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:6px 10px;font-size:1rem;background:rgba(255,255,255,.3);
+    border-bottom:2px dashed #ccc;flex-shrink:0;min-height:38px;
+}
+.game-header .declared-rank{font-size:1.4rem;font-weight:900;color:var(--stamp-red)}
+.game-header .turn-info{font-size:.85rem;color:#888}
+
+/* Opponents area */
+.opponents-area{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:8px 4px;flex-shrink:0;min-height:60px}
+.opponent-card{
+    display:flex;flex-direction:column;align-items:center;padding:6px 10px;
+    background:rgba(255,255,255,.35);border-radius:10px;min-width:70px;position:relative;
+}
+.opponent-card.is-turn{background:rgba(255,235,59,.3);box-shadow:0 0 0 2px var(--marker-orange);border-radius:10px}
+.opponent-card.is-dealer::after{
+    content:'庄';position:absolute;top:-6px;right:-4px;
+    background:var(--stamp-red);color:#fff;font-size:.6rem;
+    width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+}
+.opponent-name{font-size:.85rem;font-weight:bold;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.opponent-count{font-size:1.2rem;font-weight:900}
+.opponent-card.disconnected{opacity:.4}
+.opponent-hand-vis{display:flex;gap:4px;align-items:center;margin-top:2px;flex-wrap:wrap;justify-content:center}
+.opp-deck{display:flex;align-items:center;gap:1px;font-size:.75rem;font-weight:900}
+.mini-card-back{width:16px;height:22px;border-radius:2px;border:1.5px solid;display:inline-block;position:relative;vertical-align:middle}
+.mini-card-back[data-deck="0"]{background:var(--deck-0-color);border-color:var(--deck-0-ink)}
+.mini-card-back[data-deck="1"]{background:var(--deck-1-color);border-color:var(--deck-1-ink)}
+.mini-card-back[data-deck="2"]{background:var(--deck-2-color);border-color:var(--deck-2-ink)}
+.mini-card-back::after{content:'?';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:9px;font-weight:900}
+
+/* Table area */
+.table-area{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;min-height:120px;overflow:hidden}
+.card-pool{width:220px;min-height:110px;padding:10px;background:rgba(255,255,255,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.pool-cards-row{display:flex;justify-content:center;min-height:55px;position:relative;width:100%}
+.pool-card{position:absolute;top:0}
+.pool-count{font-weight:900;font-size:1.1rem;margin-top:8px;text-align:center}
+.pool-last-play{font-size:.85rem;color:#888;text-align:center}
+
+/* Game log */
+.game-log{max-height:48px;overflow-y:auto;width:100%;padding:4px 8px;flex-shrink:0}
+.game-log .log-entry{font-size:.78rem;color:#999;line-height:1.3}
+.game-log .log-entry.important{color:var(--stamp-red);font-weight:bold}
+
+/* Action area */
+.action-area{display:flex;justify-content:space-around;align-items:center;padding:8px 4px;gap:6px;flex-shrink:0;min-height:54px;flex-wrap:wrap}
+.action-area .doodle-btn{flex:1;min-width:0;padding:10px 8px;font-size:1rem;text-align:center}
+
+/* Hand area */
+.hand-area{
+    display:flex;align-items:flex-end;padding:6px 10px 32px;
+    overflow-x:auto;overflow-y:hidden;flex-shrink:0;min-height:110px;
+    -webkit-overflow-scrolling:touch;justify-content:flex-start;
+    padding-bottom:calc(32px + env(safe-area-inset-bottom, 0px));
+}
+.hand-area::-webkit-scrollbar{display:none}
+.hand-area .card{margin-left:var(--card-ml,3px)}
+.hand-area .card:first-child{margin-left:0}
+
+/* ═══════════════════════════════════════════════
+   CARDS
+   ═══════════════════════════════════════════════ */
+.card{
+    width:52px;height:74px;background:#fff;border:2px solid var(--ink-black);
+    border-radius:4px 10px 3px 8px;display:flex;flex-direction:column;
+    font-size:14px;font-weight:900;
+    box-shadow:2px 2px 0 rgba(0,0,0,.08);position:relative;flex-shrink:0;
+    cursor:pointer;transition:transform .15s,box-shadow .15s;overflow:hidden;
+}
+.card .card-rank{position:absolute;top:3px;left:5px;font-size:14px;line-height:1;z-index:1}
+.card .card-suit{position:absolute;top:18px;left:5px;font-size:10px;line-height:1;z-index:1}
+.card .card-corner{position:absolute;bottom:3px;right:3px;font-size:7px;z-index:2;font-weight:bold}
+.card.suit-red{color:#C62828}
+.card.suit-black{color:var(--ink-black)}
+.card.card-joker{color:#9C27B0}
+.card.card-joker .card-rank{font-size:11px}
+
+/* Deck color variants */
+.card[data-deck="0"]{border-color:var(--deck-0-color);background-color:var(--deck-0-bg)}
+.card[data-deck="0"] .card-corner{color:var(--deck-0-color)}
+.card[data-deck="1"]{border-color:var(--deck-1-color);background-color:var(--deck-1-bg)}
+.card[data-deck="1"] .card-corner{color:var(--deck-1-color)}
+.card[data-deck="2"]{border-color:var(--deck-2-color);background-color:var(--deck-2-bg)}
+.card[data-deck="2"] .card-corner{color:var(--deck-2-color)}
+
+/* Card back (face-down) */
+.card.face-down{background:#8B7355!important;color:transparent!important;border-color:#6B5535}
+.card.face-down *{visibility:hidden}
+.card.face-down::after{content:'?';position:absolute;color:rgba(255,255,255,.5);font-size:26px;font-weight:900;visibility:visible}
+.card.face-down[data-deck="0"]{background:#A05040!important;border-color:var(--deck-0-ink)}
+.card.face-down[data-deck="0"]::after{color:rgba(255,220,210,.4)}
+.card.face-down[data-deck="1"]{background:#4A7080!important;border-color:var(--deck-1-ink)}
+.card.face-down[data-deck="1"]::after{color:rgba(210,230,240,.4)}
+.card.face-down[data-deck="2"]{background:#5A6B42!important;border-color:var(--deck-2-ink)}
+.card.face-down[data-deck="2"]::after{color:rgba(220,235,210,.4)}
+
+/* Selected card in hand */
+.card.selected{transform:translateY(-14px)!important;box-shadow:0 4px 12px rgba(0,0,0,.2);outline:3px solid var(--marker-blue);outline-offset:-1px}
+.hand-area .card{transform:rotate(var(--card-rot,0deg))}
+
+/* Small card */
+.card.card-sm{width:40px;height:56px;font-size:11px}
+.card.card-sm .card-rank{font-size:12px;top:2px;left:4px}
+.card.card-sm .card-suit{font-size:8px;top:14px;left:4px}
+.card.card-sm .card-corner{bottom:2px;right:2px;font-size:6px}
+
+/* ═══════════════════════════════════════════════
+   DECLARE MODAL
+   ═══════════════════════════════════════════════ */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:50;justify-content:center;align-items:center;padding:20px}
+.modal-overlay.active{display:flex}
+.modal-box{background:var(--paper-bg);padding:20px;max-width:340px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:6px 6px 0 rgba(0,0,0,.15)}
+.modal-box h2{text-align:center;margin-bottom:12px;transform:rotate(-1deg);font-size:1.4rem}
+.rank-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
+.rank-btn{
+    border:2px solid var(--ink-black);background:rgba(255,255,255,.7);
+    padding:10px 0;font-family:inherit;font-size:1.2rem;font-weight:900;
+    border-radius:8px;cursor:pointer;transition:all .1s;
+}
+.rank-btn:active{transform:scale(.93)}
+.rank-btn.selected{background:var(--marker-blue);color:#fff;border-color:var(--marker-blue);transform:rotate(-2deg) scale(1.05)}
+.mode-toggle{display:flex;gap:8px;margin-bottom:16px}
+.mode-btn{
+    flex:1;border:2px solid var(--ink-black);background:rgba(255,255,255,.7);
+    padding:10px;font-family:inherit;font-size:.95rem;font-weight:bold;
+    cursor:pointer;border-radius:8px;text-align:center;transition:all .1s;
+}
+.mode-btn.selected{background:var(--marker-orange);color:#fff;border-color:var(--marker-orange)}
+.mode-desc{font-size:.75rem;color:#888;margin-top:2px}
+.mode-btn.selected .mode-desc{color:rgba(255,255,255,.8)}
+
+/* ═══════════════════════════════════════════════
+   RESULT SCREEN
+   ═══════════════════════════════════════════════ */
+#screen-result{justify-content:center;align-items:center;gap:24px;text-align:center}
+.result-title{font-size:2.4rem;font-weight:900;transform:rotate(-3deg)}
+.result-winner{font-size:1.6rem;color:var(--marker-orange)}
+
+/* ═══════════════════════════════════════════════
+   OVERLAYS
+   ═══════════════════════════════════════════════ */
+#overlay-liar{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;justify-content:center;align-items:center;pointer-events:none}
+#overlay-liar.active{display:flex}
+.stamp-text{
+    color:var(--stamp-red);border:8px double var(--stamp-red);
+    padding:10px 28px;font-size:3.5rem;font-weight:900;letter-spacing:4px;
+    background:rgba(255,255,255,.85);border-radius:12px;opacity:0;transform:scale(4) rotate(25deg);
+}
+@keyframes stamp-slam{
+    0%{transform:scale(4) rotate(25deg);opacity:0}
+    70%{transform:scale(.9) rotate(-12deg);opacity:1}
+    85%{transform:scale(1.05) rotate(-8deg);opacity:1}
+    100%{transform:scale(1) rotate(-10deg);opacity:.95}
+}
+.stamp-text.animate{animation:stamp-slam .3s forwards}
+.stamp-text.honest{color:#2E7D32;border-color:#2E7D32}
+
+#overlay-challenge{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:90;background:rgba(0,0,0,.5);justify-content:center;align-items:center;flex-direction:column;gap:16px;padding:20px}
+#overlay-challenge.active{display:flex}
+.challenge-result-box{background:var(--paper-bg);padding:20px;text-align:center;max-width:320px;width:100%;box-shadow:6px 6px 0 rgba(0,0,0,.15)}
+.challenge-result-box h2{font-size:1.5rem;margin-bottom:8px}
+.challenge-result-box .result-detail{font-size:1rem;margin-bottom:12px;color:#666}
+.reveal-cards{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;max-width:300px;margin:0 auto}
+
+#overlay-reconnect{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:200;background:rgba(244,236,216,.95);justify-content:center;align-items:center;flex-direction:column;gap:16px}
+#overlay-reconnect.active{display:flex}
+.reconnect-text{font-size:1.3rem;font-weight:bold;text-align:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:40px;height:40px;border:4px solid #ccc;border-top-color:var(--ink-black);border-radius:50%;animation:spin .8s linear infinite}
+
+/* Toast */
+#toast-container{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--ink-black);color:var(--paper-bg);padding:10px 20px;border-radius:8px;font-size:.95rem;font-family:inherit;animation:toast-in .3s forwards;white-space:nowrap}
+.toast.toast-out{animation:toast-out .3s forwards}
+@keyframes toast-in{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toast-out{from{opacity:1}to{opacity:0;transform:translateY(-20px)}}
+
+/* Misc animations */
+@keyframes shake{0%,100%{transform:translate(0,0)}20%{transform:translate(5px,3px)}40%{transform:translate(-5px,-3px)}60%{transform:translate(4px,-4px)}80%{transform:translate(-3px,4px)}}
+.shake{animation:shake .25s}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+
+/* FFA challenge btn */
+.ffa-challenge-btn{
+    position:fixed;bottom:180px;right:12px;z-index:40;width:64px;height:64px;
+    border-radius:50%;background:var(--stamp-red);color:#fff;border:3px solid #b71c1c;
+    font-family:inherit;font-weight:900;font-size:.8rem;cursor:pointer;
+    box-shadow:3px 3px 0 rgba(0,0,0,.2);display:none;align-items:center;justify-content:center;
+    animation:pulse 1.5s infinite;
+}
+.ffa-challenge-btn.visible{display:flex}
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ SCREEN: HOME ═══════════ -->
+<div id="screen-home" class="screen active">
+    <div class="home-card-deco">🃏</div>
+    <div class="home-title">骗子博弈</div>
+    <div class="home-subtitle">Liar's Gambit</div>
+    <input type="text" id="input-name" class="input-sketch" placeholder="你叫什么名字?" maxlength="8" autocomplete="off">
+    <div class="home-actions">
+        <button class="doodle-btn btn-blue btn-wide" id="btn-create">✏️ 创建房间</button>
+        <div style="color:#aaa;font-size:.9rem;">— 或者 —</div>
+        <div class="home-join-row">
+            <input type="text" id="input-room-code" class="input-sketch" placeholder="房间号" maxlength="4" autocomplete="off">
+            <button class="doodle-btn btn-green" id="btn-join">加入</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════ SCREEN: LOBBY ═══════════ -->
+<div id="screen-lobby" class="screen">
+    <div class="lobby-header">🎴 等待中...</div>
+    <div class="lobby-room-info sketch-border">
+        <div>
+            <div style="font-size:.8rem;color:#888;">房间号</div>
+            <div class="lobby-room-code" id="lobby-room-code">----</div>
+        </div>
+        <div id="lobby-qr"></div>
+    </div>
+    <div class="lobby-players sketch-border-alt" id="lobby-players-box">
+        <h3>👥 玩家 (<span id="lobby-player-count">0</span>/8)</h3>
+        <div id="lobby-player-list"></div>
+    </div>
+    <div class="deck-selector sketch-border" id="deck-selector">
+        <h3>🃏 牌组数量</h3>
+        <div class="deck-options" id="deck-options">
+            <div class="deck-option selected" data-count="1" onclick="app.selectDeckCount(1)">
+                <div class="deck-num">1</div>
+                <div class="deck-count">54张</div>
+                <div class="deck-colors"><div class="deck-color-dot" style="background:var(--deck-0-color)"></div></div>
+            </div>
+            <div class="deck-option" data-count="2" onclick="app.selectDeckCount(2)">
+                <div class="deck-num">2</div>
+                <div class="deck-count">108张</div>
+                <div class="deck-colors">
+                    <div class="deck-color-dot" style="background:var(--deck-0-color)"></div>
+                    <div class="deck-color-dot" style="background:var(--deck-1-color)"></div>
+                </div>
+            </div>
+            <div class="deck-option" data-count="3" onclick="app.selectDeckCount(3)">
+                <div class="deck-num">3</div>
+                <div class="deck-count">162张</div>
+                <div class="deck-colors">
+                    <div class="deck-color-dot" style="background:var(--deck-0-color)"></div>
+                    <div class="deck-color-dot" style="background:var(--deck-1-color)"></div>
+                    <div class="deck-color-dot" style="background:var(--deck-2-color)"></div>
+                </div>
+            </div>
+        </div>
+        <div id="deck-hint" style="font-size:.85rem;color:#888;margin-top:8px;">每人约 ? 张牌</div>
+    </div>
+    <div class="lobby-settings sketch-border-alt" id="lobby-settings">
+        <h3>⚙️ 房间设置</h3>
+        <div class="setting-row">
+            <span class="setting-label">质疑模式</span>
+            <div class="setting-mode-btns">
+                <div class="setting-mode-btn selected" id="lobby-mode-seq" onclick="app.selectChallengeMode('sequential')">顺序</div>
+                <div class="setting-mode-btn" id="lobby-mode-ffa" onclick="app.selectChallengeMode('freeforall')">乱序</div>
+            </div>
+        </div>
+        <div class="setting-row">
+            <span class="setting-label">显示出牌记录</span>
+            <div class="toggle-switch active" id="toggle-play-log" onclick="app.togglePlayLog()"></div>
+        </div>
+    </div>
+    <div class="lobby-footer">
+        <button class="doodle-btn btn-blue btn-wide" id="btn-start" disabled>▶ 开始游戏!</button>
+        <div class="lobby-hint" id="lobby-status">等待更多玩家加入...</div>
+    </div>
+</div>
+
+<!-- ═══════════ SCREEN: GAME ═══════════ -->
+<div id="screen-game" class="screen">
+    <div class="game-header">
+        <div>目标: <span class="declared-rank" id="game-declared-rank">-</span></div>
+        <div class="turn-info" id="game-turn-info">等待中</div>
+        <div style="font-size:.8rem;color:#aaa;" id="game-room-tag"></div>
+    </div>
+    <div class="opponents-area" id="opponents-area"></div>
+    <div class="table-area">
+        <div class="card-pool sketch-border" id="card-pool">
+            <div class="pool-cards-row" id="pool-cards-row"></div>
+            <div class="pool-count" id="pool-count">牌池空</div>
+            <div class="pool-last-play" id="pool-last-play"></div>
+        </div>
+    </div>
+    <div class="game-log" id="game-log"></div>
+    <div class="action-area" id="action-area">
+        <button class="doodle-btn" id="btn-play" disabled>出牌</button>
+        <button class="doodle-btn" id="btn-pass" disabled>过</button>
+        <button class="doodle-btn btn-red" id="btn-challenge" disabled>质疑!</button>
+    </div>
+    <div class="hand-area" id="hand-area"></div>
+</div>
+
+<!-- FFA challenge button -->
+<button class="ffa-challenge-btn" id="btn-ffa-challenge">质疑!</button>
+
+<!-- ═══════════ SCREEN: RESULT ═══════════ -->
+<div id="screen-result" class="screen">
+    <div style="font-size:3rem;">🏆</div>
+    <div class="result-title">游戏结束!</div>
+    <div class="result-winner" id="result-winner-name">???</div>
+    <div style="font-size:1rem;color:#888;" id="result-detail">率先打光了所有手牌!</div>
+    <button class="doodle-btn btn-blue" id="btn-play-again">再来一局!</button>
+    <button class="doodle-btn" id="btn-back-home">回到首页</button>
+</div>
+
+<!-- ═══════════ MODAL: DECLARE ═══════════ -->
+<div class="modal-overlay" id="modal-declare">
+    <div class="modal-box sketch-border">
+        <h2>📢 庄家宣言</h2>
+        <p style="text-align:center;font-size:.9rem;color:#888;margin-bottom:12px;">选择本轮的目标数字</p>
+        <div class="rank-grid" id="rank-grid"></div>
+        <button class="doodle-btn btn-blue btn-wide" id="btn-declare-confirm" disabled>确认宣言!</button>
+    </div>
+</div>
+
+<!-- ═══════════ OVERLAY: CHALLENGE RESULT ═══════════ -->
+<div id="overlay-challenge">
+    <div class="challenge-result-box sketch-border">
+        <h2 id="challenge-title">质疑结果</h2>
+        <div class="result-detail" id="challenge-detail"></div>
+        <div class="reveal-cards" id="challenge-reveal-cards"></div>
+        <div style="margin-top:12px;">
+            <div id="challenge-verdict" style="font-size:1.2rem;font-weight:900;"></div>
+            <div id="challenge-penalty" style="font-size:.9rem;color:#888;margin-top:4px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════ OVERLAY: LIAR STAMP ═══════════ -->
+<div id="overlay-liar"><div class="stamp-text" id="stamp-text">LIAR!</div></div>
+
+<!-- ═══════════ OVERLAY: RECONNECTING ═══════════ -->
+<div id="overlay-reconnect">
+    <div class="spinner"></div>
+    <div class="reconnect-text" id="reconnect-text">正在重新连接...</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<!-- ═══════════ CDN SCRIPTS ═══════════ -->
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   LIAR'S GAMBIT (骗子博弈) — Complete Game Engine
+   Single-file P2P card game using PeerJS
+   ═══════════════════════════════════════════════════════════════ */
+
+// ═══════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════
+const SUITS = ['♠','♥','♦','♣'];
+const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const RED_SUITS = new Set(['♥','♦']);
+const MAX_PLAYERS = 8;
+const HEARTBEAT_INTERVAL = 5000;
+const HEARTBEAT_TIMEOUT = 16000;
+const DECK_COLORS = [
+    { primary:'#B8453A', symbol:'●' },
+    { primary:'#4A7C96', symbol:'◆' },
+    { primary:'#6B7F4E', symbol:'▲' },
+];
+
+// ═══════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════
+const $ = id => document.getElementById(id);
+const $$ = sel => document.querySelectorAll(sel);
+const uuid = () => crypto.randomUUID ? crypto.randomUUID() : 'xxxx-xxxx-xxxx'.replace(/x/g,()=>(Math.random()*16|0).toString(16));
+const rng = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
+const mkRoomCode = () => {
+    const ch = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    return Array.from({length:4},()=>ch[rng(0,ch.length-1)]).join('');
+};
+
+function showToast(msg, dur=2500){
+    const el = document.createElement('div');
+    el.className='toast'; el.textContent=msg;
+    $('toast-container').appendChild(el);
+    setTimeout(()=>{el.classList.add('toast-out');setTimeout(()=>el.remove(),300)},dur);
+}
+
+function showScreen(name){
+    $$('.screen').forEach(s=>s.classList.remove('active'));
+    const s=$('screen-'+name); if(s) s.classList.add('active');
+}
+
+function sortCards(cards){
+    const ro={}; RANKS.forEach((r,i)=>ro[r]=i); ro['JOKER']=99;
+    return [...cards].sort((a,b)=> a.rank===b.rank ? a.deck-b.deck : (ro[a.rank]??50)-(ro[b.rank]??50));
+}
+
+function cardToHTML(card, extra='', faceDown=false){
+    if(!card) return '';
+    const isRed=RED_SUITS.has(card.suit), isJ=card.rank==='JOKER';
+    const sc=isJ?'card-joker':(isRed?'suit-red':'suit-black');
+    const fd=faceDown?'face-down':'';
+    const sym=DECK_COLORS[card.deck]?.symbol||'';
+    const dr=isJ?(card.jokerType==='big'?'大王':'小王'):card.rank;
+    const ds=isJ?'🃏':card.suit;
+    return `<div class="card ${sc} ${fd} ${extra}" data-id="${card.id}" data-deck="${card.deck}">
+        <span class="card-corner">${sym}</span><span class="card-rank">${dr}</span><span class="card-suit">${ds}</span></div>`;
+}
+
+// ═══════════════════════════════════════
+// CARD ENGINE
+// ═══════════════════════════════════════
+class CardEngine {
+    static createDecks(n){
+        const cards=[];
+        for(let d=0;d<n;d++){
+            for(const suit of SUITS)
+                for(const rank of RANKS)
+                    cards.push({id:`${d}-${suit}-${rank}`,deck:d,suit,rank,isJoker:false,jokerType:null});
+            cards.push({id:`${d}-J-BIG`,deck:d,suit:'🃏',rank:'JOKER',isJoker:true,jokerType:'big'});
+            cards.push({id:`${d}-J-SMALL`,deck:d,suit:'🃏',rank:'JOKER',isJoker:true,jokerType:'small'});
+        }
+        return cards;
+    }
+    static shuffle(cards){
+        const a=[...cards];
+        for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+        return a;
+    }
+    static deal(cards,n){
+        const h=Array.from({length:n},()=>[]);
+        cards.forEach((c,i)=>h[i%n].push(c));
+        return h;
+    }
+}
+
+// ═══════════════════════════════════════
+// NETWORK MANAGER
+// ═══════════════════════════════════════
+class NetworkManager {
+    constructor(){
+        this.peer=null; this.connections=new Map();
+        this.isHost=false; this.hostPeerId=null; this.hostConn=null;
+        this.myPeerId=null; this.roomCode=''; this.handlers={};
+        this.heartbeatTimer=null; this.onPeerConnect=null; this.onPeerDisconnect=null;
+        this.destroyed=false; this._lastHostHB=0;
+    }
+    _pid(code){ return 'lg-'+code; }
+
+    async createRoom(){
+        this.isHost=true; this.roomCode=mkRoomCode();
+        const pid=this._pid(this.roomCode);
+        return new Promise((res,rej)=>{
+            this.peer=new Peer(pid,{debug:0});
+            this.peer.on('open',id=>{
+                this.myPeerId=id; this.hostPeerId=id;
+                this.peer.on('connection',c=>this._setupConn(c));
+                this._startHB(); res(this.roomCode);
+            });
+            this.peer.on('error',e=>{
+                if(e.type==='unavailable-id') rej(new Error('房间号冲突，请重试'));
+                else rej(e);
+            });
+            this.peer.on('disconnected',()=>{ if(!this.destroyed) this.peer.reconnect(); });
+        });
+    }
+
+    async joinRoom(code){
+        this.isHost=false; this.roomCode=code.toUpperCase();
+        const hpid=this._pid(this.roomCode); this.hostPeerId=hpid;
+        return new Promise((res,rej)=>{
+            this.peer=new Peer(undefined,{debug:0});
+            this.peer.on('open',id=>{
+                this.myPeerId=id;
+                const conn=this.peer.connect(hpid,{reliable:true});
+                conn.on('open',()=>{this.hostConn=conn;this._setupHostConn(conn);this._startHB();res();});
+                conn.on('error',e=>rej(new Error('无法连接到房间')));
+                setTimeout(()=>rej(new Error('连接超时')),8000);
+            });
+            this.peer.on('error',e=>rej(e));
+            this.peer.on('disconnected',()=>{ if(!this.destroyed) this.peer.reconnect(); });
+        });
+    }
+
+    // Setup for host receiving client connections
+    _setupConn(conn){
+        const pid=conn.peer;
+        conn.on('open',()=>{
+            this.connections.set(pid,{conn,lastHB:Date.now()});
+            if(this.onPeerConnect) this.onPeerConnect(pid,conn);
+        });
+        conn.on('data',d=>{
+            if(d&&d.type==='HEARTBEAT'){const e=this.connections.get(pid);if(e)e.lastHB=Date.now();return;}
+            this._dispatch(d,pid);
+        });
+        conn.on('close',()=>{
+            this.connections.delete(pid);
+            if(this.onPeerDisconnect) this.onPeerDisconnect(pid);
+        });
+        conn.on('error',()=>{});
+    }
+
+    // Setup for client receiving from host
+    _setupHostConn(conn){
+        conn.on('data',d=>{
+            if(d&&d.type==='HEARTBEAT'){this._lastHostHB=Date.now();return;}
+            this._dispatch(d,conn.peer);
+        });
+        conn.on('close',()=>{
+            if(this.onPeerDisconnect) this.onPeerDisconnect(this.hostPeerId);
+        });
+        this._lastHostHB=Date.now();
+    }
+
+    send(pid,msg){
+        if(this.isHost){const e=this.connections.get(pid);if(e&&e.conn.open)e.conn.send(msg);}
+        else if(this.hostConn&&this.hostConn.open) this.hostConn.send(msg);
+    }
+    sendToHost(msg){
+        if(this.isHost) this._dispatch(msg,this.myPeerId);
+        else if(this.hostConn&&this.hostConn.open) this.hostConn.send(msg);
+    }
+    broadcast(msg){for(const[,e]of this.connections)if(e.conn.open)e.conn.send(msg);}
+    broadcastAndSelf(msg){this.broadcast(msg);this._dispatch(msg,this.myPeerId);}
+
+    on(type,handler){if(!this.handlers[type])this.handlers[type]=[];this.handlers[type].push(handler);}
+    off(type){delete this.handlers[type];}
+    _dispatch(d,from){if(!d||!d.type)return;const hs=this.handlers[d.type];if(hs)hs.forEach(h=>h(d,from));}
+
+    _startHB(){
+        this.heartbeatTimer=setInterval(()=>{
+            const hb={type:'HEARTBEAT',t:Date.now()};
+            if(this.isHost){
+                this.broadcast(hb);
+                const now=Date.now();
+                for(const[pid,e]of this.connections){
+                    if(now-e.lastHB>HEARTBEAT_TIMEOUT){
+                        e.conn.close(); this.connections.delete(pid);
+                        if(this.onPeerDisconnect)this.onPeerDisconnect(pid);
+                    }
+                }
+            } else {
+                if(this.hostConn&&this.hostConn.open) this.hostConn.send(hb);
+                if(this._lastHostHB && Date.now()-this._lastHostHB>HEARTBEAT_TIMEOUT){
+                    if(this.onPeerDisconnect) this.onPeerDisconnect(this.hostPeerId);
+                    this._lastHostHB = Date.now() + 60000; // prevent repeated fires
+                }
+            }
+        },HEARTBEAT_INTERVAL);
+    }
+
+    destroy(){
+        this.destroyed=true; clearInterval(this.heartbeatTimer);
+        if(this.peer)this.peer.destroy(); this.connections.clear();
+    }
+}
+
+// ═══════════════════════════════════════
+// GAME ENGINE (State Machine)
+// ═══════════════════════════════════════
+class GameEngine {
+    constructor(net){
+        this.net=net;
+        this.myPlayerId=localStorage.getItem('lg_playerId')||uuid();
+        localStorage.setItem('lg_playerId',this.myPlayerId);
+        this.myName=localStorage.getItem('lg_playerName')||'';
+
+        this.fullState=null; // host only, full data
+        this.state=null;     // sanitized, all clients
+        this.myHand=[];
+
+        // Callbacks
+        this.onStateUpdate=null; this.onHandUpdate=null;
+        this.onChallengeResult=null; this.onGameOver=null;
+        this.onLog=null; this.onRequestDeclare=null;
+
+        this._bind();
+    }
+
+    _bind(){
+        const n=this.net;
+        // HOST receives
+        n.on('JOIN',(d,from)=>{if(n.isHost)this._onJoin(d,from);});
+        n.on('REJOIN',(d,from)=>{if(n.isHost)this._onRejoin(d,from);});
+        n.on('DECLARE',(d,from)=>{if(n.isHost)this._onDeclare(d,from);});
+        n.on('PLAY_CARDS',(d,from)=>{if(n.isHost)this._onPlayCards(d,from);});
+        n.on('PASS',(d,from)=>{if(n.isHost)this._onPass(d,from);});
+        n.on('CHALLENGE',(d,from)=>{if(n.isHost)this._onChallenge(d,from);});
+        n.on('DECK_COUNT',(d,from)=>{
+            if(!n.isHost||!this.fullState)return;
+            this.fullState.deckCount=Math.max(1,Math.min(3,d.count));
+            this._broadcastState();
+        });
+        n.on('CHALLENGE_MODE',(d,from)=>{
+            if(!n.isHost||!this.fullState||this.fullState.phase!=='LOBBY')return;
+            this.fullState.challengeMode=d.mode==='freeforall'?'freeforall':'sequential';
+            this._broadcastState();
+        });
+        n.on('SHOW_PLAY_LOG',(d,from)=>{
+            if(!n.isHost||!this.fullState)return;
+            this.fullState.showPlayLog=!!d.value;
+            this._broadcastState();
+        });
+        n.on('START_GAME',()=>{if(n.isHost)this._startGame();});
+        n.on('PLAY_AGAIN',()=>{if(n.isHost)this._startGame();});
+
+        // CLIENT receives
+        n.on('WELCOME',d=>{this.myPlayerId=d.playerId;localStorage.setItem('lg_playerId',d.playerId);});
+        n.on('STATE_UPDATE',d=>{this.state=d.state;this._saveState();if(this.onStateUpdate)this.onStateUpdate(this.state);});
+        n.on('HAND_UPDATE',d=>{this.myHand=d.hand||[];this._saveHand();if(this.onHandUpdate)this.onHandUpdate(this.myHand);});
+        n.on('CHALLENGE_RESULT',d=>{if(this.onChallengeResult)this.onChallengeResult(d);});
+        n.on('GAME_OVER',d=>{if(this.onGameOver)this.onGameOver(d);});
+        n.on('LOG',d=>{if(this.onLog)this.onLog(d.message,d.important,d.isPlayInfo);});
+        n.on('LOG_CLEAR',()=>{if(this.onLogClear)this.onLogClear();});
+        n.on('REQUEST_DECLARE',()=>{if(this.onRequestDeclare)this.onRequestDeclare();});
+    }
+
+    // ─── HOST: Init lobby ───
+    initLobby(deckCount=1){
+        this.fullState={
+            phase:'LOBBY', players:[], currentPlayerIndex:-1, dealerIndex:-1,
+            declaredRank:null, challengeMode:'sequential',
+            tableCards:[], tablePlayLog:[], lastPlayerId:null, lastPlayCount:0,
+            passCount:0, deckCount, discardPile:[], seq:0, showPlayLog:true
+        };
+        this._addPlayer(this.myPlayerId,this.myName,this.net.myPeerId);
+        this._broadcastState();
+    }
+
+    _addPlayer(id,name,peerId){
+        const fs=this.fullState; if(!fs)return null;
+        const ex=fs.players.find(p=>p.id===id);
+        if(ex){ex.connected=true;ex.peerId=peerId;return ex;}
+        if(fs.players.length>=MAX_PLAYERS)return null;
+        const p={id,name:name||('玩家'+(fs.players.length+1)),peerId,hand:[],handCount:0,connected:true,joinOrder:fs.players.length};
+        fs.players.push(p); return p;
+    }
+    _pByPeer(pid){return this.fullState?.players.find(p=>p.peerId===pid);}
+    _pById(id){return this.fullState?.players.find(p=>p.id===id);}
+
+    // ─── HOST: Join ───
+    _onJoin(d,from){
+        const p=this._addPlayer(d.playerId,d.name,from);
+        if(!p){this.net.send(from,{type:'ERROR',message:'房间已满'});return;}
+        this.net.send(from,{type:'WELCOME',playerId:p.id});
+        // If game in progress, send hand too
+        if(this.fullState.phase!=='LOBBY'){
+            this.net.send(from,{type:'HAND_UPDATE',hand:p.hand});
+        }
+        this._log(`${p.name} 加入了房间`);
+        this._broadcastState();
+    }
+
+    // ─── HOST: Rejoin ───
+    _onRejoin(d,from){
+        const p=this._pById(d.playerId);
+        if(!p){this._onJoin({playerId:d.playerId,name:d.name||'???'},from);return;}
+        p.connected=true;p.peerId=from;
+        this.net.send(from,{type:'WELCOME',playerId:p.id});
+        this.net.send(from,{type:'HAND_UPDATE',hand:p.hand});
+        this._log(`${p.name} 重新连接了`);
+        this._broadcastState();
+    }
+
+    // ─── HOST: Start game ───
+    _startGame(){
+        const fs=this.fullState;
+        if(!fs||fs.players.filter(p=>p.connected).length<2)return;
+
+        const deck=CardEngine.shuffle(CardEngine.createDecks(fs.deckCount));
+        const active=fs.players.filter(p=>p.connected);
+        const hands=CardEngine.deal(deck,active.length);
+        active.forEach((p,i)=>{p.hand=sortCards(hands[i]);p.handCount=p.hand.length;});
+        // Disconnected players get empty hands
+        fs.players.filter(p=>!p.connected).forEach(p=>{p.hand=[];p.handCount=0;});
+
+        fs.phase='DECLARING'; fs.tableCards=[]; fs.tablePlayLog=[]; fs.discardPile=[];
+        fs.lastPlayerId=null; fs.lastPlayCount=0; fs.passCount=0;
+        fs.dealerIndex=rng(0,fs.players.length-1);
+        // Make sure dealer is connected
+        while(!fs.players[fs.dealerIndex].connected) fs.dealerIndex=(fs.dealerIndex+1)%fs.players.length;
+        fs.currentPlayerIndex=fs.dealerIndex;
+        fs.declaredRank=null; fs.seq++;
+
+        // Clear logs for new game
+        this.net.broadcastAndSelf({type:'LOG_CLEAR'});
+
+        // Send each player their hand
+        for(const p of fs.players){
+            if(p.peerId===this.net.myPeerId){
+                this.myHand=[...p.hand]; this._saveHand();
+                if(this.onHandUpdate)this.onHandUpdate(this.myHand);
+            } else if(p.connected){
+                this.net.send(p.peerId,{type:'HAND_UPDATE',hand:p.hand});
+            }
+        }
+
+        this._log('游戏开始！发牌中...');
+        this._broadcastState();
+
+        // Request dealer to declare
+        const dealer=fs.players[fs.dealerIndex];
+        if(dealer.peerId===this.net.myPeerId){if(this.onRequestDeclare)this.onRequestDeclare();}
+        else this.net.send(dealer.peerId,{type:'REQUEST_DECLARE'});
+    }
+
+    // ─── HOST: Declare ───
+    _onDeclare(d,from){
+        const fs=this.fullState;
+        if(!fs||fs.phase!=='DECLARING')return;
+        const dealer=fs.players[fs.dealerIndex];
+        const p=this._pByPeer(from);
+        if(!p||p.id!==dealer.id)return;
+        fs.declaredRank=d.rank;
+        fs.phase='TURN'; fs.seq++;
+        this._log(`庄家 ${dealer.name} 宣言: 目标【${d.rank}】(${fs.challengeMode==='sequential'?'顺序质疑':'乱序质疑'})`,false,true);
+        this._broadcastState();
+    }
+
+    // ─── HOST: Play cards ───
+    _onPlayCards(d,from){
+        const fs=this.fullState;
+        if(!fs||fs.phase!=='TURN')return;
+        const p=this._pByPeer(from); if(!p)return;
+        const cur=fs.players[fs.currentPlayerIndex];
+        if(p.id!==cur.id)return;
+        const ids=d.cardIds; if(!ids||!ids.length)return;
+
+        // Validate & extract cards
+        const played=[];
+        for(const cid of ids){
+            const idx=p.hand.findIndex(c=>c.id===cid);
+            if(idx===-1)return;
+            played.push(p.hand[idx]);
+        }
+        // Remove from hand
+        for(const cid of ids){
+            const idx=p.hand.findIndex(c=>c.id===cid);
+            if(idx!==-1)p.hand.splice(idx,1);
+        }
+        p.handCount=p.hand.length;
+
+        fs.tableCards.push(...played);
+        fs.tablePlayLog.push({playerId:p.id,cards:[...played]});
+        fs.lastPlayerId=p.id; fs.lastPlayCount=played.length;
+        fs.passCount=0; fs.seq++;
+
+        // Send updated hand
+        this._sendHand(p);
+        this._log(`${p.name} 打出了 ${played.length} 张牌 (声称是 ${fs.declaredRank})`,false,true);
+        this._advanceTurn();
+        this._broadcastState();
+    }
+
+    // ─── HOST: Pass ───
+    _onPass(d,from){
+        const fs=this.fullState;
+        if(!fs||fs.phase!=='TURN')return;
+        const p=this._pByPeer(from); if(!p)return;
+        const cur=fs.players[fs.currentPlayerIndex];
+        if(p.id!==cur.id)return;
+
+        fs.passCount++; fs.seq++;
+        this._log(`${p.name} 跳过了`,false,true);
+
+        const active=fs.players.filter(p=>p.connected);
+        if(fs.lastPlayerId && fs.passCount>=active.length-1){
+            this._roundEnd();
+        } else {
+            this._advanceTurn();
+            this._broadcastState();
+        }
+    }
+
+    // ─── HOST: Challenge ───
+    _onChallenge(d,from){
+        const fs=this.fullState;
+        if(!fs||fs.phase!=='TURN'||!fs.lastPlayerId)return;
+        const challenger=this._pByPeer(from); if(!challenger)return;
+        if(challenger.id===fs.lastPlayerId)return;
+
+        if(fs.challengeMode==='sequential'){
+            const cur=fs.players[fs.currentPlayerIndex];
+            if(challenger.id!==cur.id)return;
+        }
+
+        fs.phase='RESOLVING'; fs.seq++;
+        const lastPlay=fs.tablePlayLog[fs.tablePlayLog.length-1];
+        if(!lastPlay)return;
+        const target=this._pById(fs.lastPlayerId);
+        const revealed=lastPlay.cards;
+        const isLiar=revealed.some(c=>c.rank!==fs.declaredRank&&!c.isJoker);
+
+        const loserId=isLiar?target.id:challenger.id;
+        const loser=this._pById(loserId);
+        const totalCards=fs.tableCards.length;
+
+        // Loser gets all table cards
+        loser.hand.push(...fs.tableCards);
+        loser.hand=sortCards(loser.hand);
+        loser.handCount=loser.hand.length;
+        this._sendHand(loser);
+
+        // Broadcast result
+        const result={
+            type:'CHALLENGE_RESULT',
+            challengerId:challenger.id, challengerName:challenger.name,
+            targetId:target.id, targetName:target.name,
+            cards:revealed, declaredRank:fs.declaredRank,
+            isLiar, loserId, loserName:loser.name, totalCards
+        };
+        this.net.broadcastAndSelf(result);
+
+        this._log(
+            isLiar ? `🎯 ${challenger.name} 质疑成功！${target.name} 是骗子！收走 ${totalCards} 张牌`
+                   : `❌ ${challenger.name} 质疑失败！${target.name} 是诚实的！${challenger.name} 收走 ${totalCards} 张牌`,
+            true
+        );
+
+        // Check win
+        const winner=fs.players.find(p=>p.connected&&p.handCount===0);
+        if(winner){this._gameOver(winner);return;}
+
+        // Clear table, new round — winner of challenge becomes dealer
+        fs.tableCards=[]; fs.tablePlayLog=[];
+        fs.lastPlayerId=null; fs.lastPlayCount=0; fs.passCount=0;
+        const nextDealer=isLiar?challenger:target;
+        const nextDealerIdx=fs.players.indexOf(nextDealer);
+        fs.dealerIndex=nextDealerIdx; fs.currentPlayerIndex=nextDealerIdx;
+        fs.phase='DECLARING'; fs.declaredRank=null; fs.seq++;
+
+        // Delay for UI
+        setTimeout(()=>{
+            this._broadcastState();
+            if(nextDealer.peerId===this.net.myPeerId){if(this.onRequestDeclare)this.onRequestDeclare();}
+            else this.net.send(nextDealer.peerId,{type:'REQUEST_DECLARE'});
+        },3500);
+    }
+
+    // ─── HOST: Round end ───
+    _roundEnd(){
+        const fs=this.fullState;
+        fs.discardPile.push(...fs.tableCards);
+        this._log(`所有人都跳过了，${fs.tableCards.length} 张牌进入弃牌堆`);
+
+        const last=this._pById(fs.lastPlayerId);
+        if(last&&last.handCount===0){this._gameOver(last);return;}
+
+        const lastIdx=fs.players.indexOf(last);
+        fs.tableCards=[]; fs.tablePlayLog=[];
+        fs.lastPlayerId=null; fs.lastPlayCount=0; fs.passCount=0;
+        fs.dealerIndex=lastIdx; fs.currentPlayerIndex=lastIdx;
+        fs.phase='DECLARING'; fs.declaredRank=null; fs.seq++;
+
+        this._broadcastState();
+        if(last.peerId===this.net.myPeerId){if(this.onRequestDeclare)this.onRequestDeclare();}
+        else this.net.send(last.peerId,{type:'REQUEST_DECLARE'});
+    }
+
+    // ─── HOST: Game over ───
+    _gameOver(winner){
+        const fs=this.fullState;
+        fs.phase='GAME_OVER'; fs.seq++;
+        this.net.broadcastAndSelf({type:'GAME_OVER',winnerId:winner.id,winnerName:winner.name});
+        this._log(`🏆 ${winner.name} 获胜！率先打光了所有手牌！`,true);
+        this._broadcastState();
+    }
+
+    // ─── HOST: Advance turn ───
+    _advanceTurn(){
+        const fs=this.fullState;
+        const n=fs.players.length;
+        let next=(fs.currentPlayerIndex+1)%n, att=0;
+        while(!fs.players[next].connected&&att<n){next=(next+1)%n;att++;}
+        fs.currentPlayerIndex=next;
+    }
+
+    // ─── HOST: Send hand to player ───
+    _sendHand(p){
+        if(p.peerId===this.net.myPeerId){
+            this.myHand=[...p.hand]; this._saveHand();
+            if(this.onHandUpdate)this.onHandUpdate(this.myHand);
+        } else {
+            this.net.send(p.peerId,{type:'HAND_UPDATE',hand:p.hand});
+        }
+    }
+
+    // ─── HOST: Broadcast sanitized state ───
+    _broadcastState(){
+        const fs=this.fullState; if(!fs)return;
+        const s={
+            phase:fs.phase,
+            players:fs.players.map(p=>{
+                const dc=Array(fs.deckCount).fill(0);
+                for(const c of (p.hand||[]))if(c.deck<fs.deckCount)dc[c.deck]++;
+                return {id:p.id,name:p.name,handCount:p.handCount,connected:p.connected,joinOrder:p.joinOrder,deckHandCounts:dc};
+            }),
+            currentPlayerIndex:fs.currentPlayerIndex, dealerIndex:fs.dealerIndex,
+            declaredRank:fs.declaredRank, challengeMode:fs.challengeMode,
+            tableCardCount:fs.tableCards.length,
+            tablePlayLog:(fs.tablePlayLog||[]).map(e=>({playerId:e.playerId,count:e.cards.length})),
+            lastPlayerId:fs.lastPlayerId, lastPlayCount:fs.lastPlayCount,
+            passCount:fs.passCount, deckCount:fs.deckCount,
+            discardCount:(fs.discardPile||[]).length, seq:fs.seq,
+            showPlayLog:fs.showPlayLog!==false
+        };
+        this.net.broadcastAndSelf({type:'STATE_UPDATE',state:s});
+    }
+
+    _log(msg,imp=false,isPlayInfo=false){this.net.broadcastAndSelf({type:'LOG',message:msg,important:imp,isPlayInfo});}
+
+    // ─── HOST: Handle disconnect ───
+    handleDisconnect(peerId){
+        if(!this.fullState)return;
+        const p=this._pByPeer(peerId); if(!p)return;
+        p.connected=false;
+        this._log(`${p.name} 断线了`);
+        const cur=this.fullState.players[this.fullState.currentPlayerIndex];
+        if(cur&&cur.id===p.id){
+            if(this.fullState.phase==='TURN'){
+                this.fullState.passCount++;
+                const active=this.fullState.players.filter(p=>p.connected);
+                if(this.fullState.lastPlayerId&&this.fullState.passCount>=active.length){
+                    this._roundEnd();
+                } else {this._advanceTurn();this._broadcastState();}
+            } else if(this.fullState.phase==='DECLARING'){
+                const r=RANKS[rng(0,RANKS.length-1)];
+                this.fullState.declaredRank=r; this.fullState.challengeMode='sequential';
+                this.fullState.phase='TURN'; this.fullState.seq++;
+                this._log(`${p.name} 断线，自动宣言: ${r}`);
+                this._advanceTurn(); this._broadcastState();
+            } else {this._broadcastState();}
+        } else {this._broadcastState();}
+    }
+
+    // ─── LOCAL state persistence ───
+    _saveState(){try{localStorage.setItem('lg_gameState',JSON.stringify(this.state));localStorage.setItem('lg_roomCode',this.net.roomCode);localStorage.setItem('lg_hostPeerId',this.net.hostPeerId);}catch(e){}}
+    _saveHand(){try{localStorage.setItem('lg_myHand',JSON.stringify(this.myHand));}catch(e){}}
+
+    // ─── Client actions ───
+    sendJoin(name){this.myName=name;localStorage.setItem('lg_playerName',name);this.net.sendToHost({type:'JOIN',playerId:this.myPlayerId,name});}
+    sendDeclare(rank){this.net.sendToHost({type:'DECLARE',rank});}
+    sendPlayCards(ids){this.net.sendToHost({type:'PLAY_CARDS',cardIds:ids});}
+    sendPass(){this.net.sendToHost({type:'PASS'});}
+    sendChallenge(){this.net.sendToHost({type:'CHALLENGE'});}
+    sendDeckCount(c){this.net.sendToHost({type:'DECK_COUNT',count:c});}
+    sendStartGame(){this.net.sendToHost({type:'START_GAME'});}
+    sendPlayAgain(){this.net.sendToHost({type:'PLAY_AGAIN'});}
+
+    // Helpers
+    isMyTurn(){if(!this.state||this.state.phase!=='TURN')return false;const c=this.state.players[this.state.currentPlayerIndex];return c&&c.id===this.myPlayerId;}
+    isMyDeclare(){if(!this.state||this.state.phase!=='DECLARING')return false;const d=this.state.players[this.state.dealerIndex];return d&&d.id===this.myPlayerId;}
+    canChallenge(){
+        if(!this.state||this.state.phase!=='TURN'||!this.state.lastPlayerId)return false;
+        if(this.state.lastPlayerId===this.myPlayerId)return false;
+        return this.state.challengeMode==='sequential' ? this.isMyTurn() : true;
+    }
+}
+
+// ═══════════════════════════════════════
+// APP (Main Controller)
+// ═══════════════════════════════════════
+class App {
+    constructor(){
+        this.net=null; this.game=null; this.selectedCards=new Set();
+        this.selectedDeckCount=1; this.selectedRank=null;
+        this.selectedChallengeMode='sequential';
+        this._bindHome(); this._initRankGrid(); this._checkHash();
+    }
+
+    // ─── Home ───
+    _bindHome(){
+        $('btn-create').onclick=()=>this._create();
+        $('btn-join').onclick=()=>this._join();
+        $('input-room-code').addEventListener('keyup',e=>{if(e.key==='Enter')this._join();});
+        $('input-name').addEventListener('keyup',e=>{if(e.key==='Enter')$('btn-create').focus();});
+        $('btn-start').onclick=()=>this.game?.sendStartGame();
+        $('btn-play').onclick=()=>this._playCards();
+        $('btn-pass').onclick=()=>this.game?.sendPass();
+        $('btn-challenge').onclick=()=>this.game?.sendChallenge();
+        $('btn-ffa-challenge').onclick=()=>this.game?.sendChallenge();
+        $('btn-declare-confirm').onclick=()=>this._confirmDeclare();
+        $('btn-play-again').onclick=()=>this.game?.sendPlayAgain();
+        $('btn-back-home').onclick=()=>this._backHome();
+        const sn=localStorage.getItem('lg_playerName');
+        if(sn)$('input-name').value=sn;
+    }
+
+    _getName(){
+        let n=$('input-name').value.trim();
+        if(!n)n='玩家'+rng(1,999);
+        $('input-name').value=n;
+        localStorage.setItem('lg_playerName',n);
+        return n;
+    }
+
+    async _create(){
+        const name=this._getName();
+        try{
+            $('btn-create').disabled=true; $('btn-create').textContent='创建中...';
+            this.net=new NetworkManager();
+            const code=await this.net.createRoom();
+            this.game=new GameEngine(this.net);
+            this.game.myName=name;
+            this._bindCallbacks();
+            this.game.initLobby(this.selectedDeckCount);
+            this._showLobby(code,true);
+            showToast('房间已创建: '+code);
+        }catch(e){
+            showToast('创建失败: '+e.message);
+            if(this.net){this.net.destroy();this.net=null;}
+        }finally{
+            $('btn-create').disabled=false; $('btn-create').textContent='✏️ 创建房间';
+        }
+    }
+
+    async _join(){
+        const name=this._getName();
+        const code=$('input-room-code').value.trim().toUpperCase();
+        if(code.length<2){showToast('请输入房间号');return;}
+        try{
+            $('btn-join').disabled=true; $('btn-join').textContent='...';
+            this.net=new NetworkManager();
+            await this.net.joinRoom(code);
+            this.game=new GameEngine(this.net);
+            this.game.myName=name;
+            this._bindCallbacks();
+            this.game.sendJoin(name);
+            this._showLobby(code,false);
+            showToast('已加入房间: '+code);
+        }catch(e){
+            showToast('加入失败: '+e.message);
+            if(this.net){this.net.destroy();this.net=null;}
+        }finally{
+            $('btn-join').disabled=false; $('btn-join').textContent='加入';
+        }
+    }
+
+    _checkHash(){
+        const h=window.location.hash;
+        if(h&&h.includes('room=')){
+            const c=h.split('room=')[1]?.substring(0,4);
+            if(c)$('input-room-code').value=c;
+        }
+    }
+
+    // ─── Lobby ───
+    _showLobby(code,isHost){
+        showScreen('lobby');
+        $('lobby-room-code').textContent=code;
+        const qr=$('lobby-qr'); qr.innerHTML='';
+        try{
+            const url=window.location.href.split('#')[0]+'#room='+code;
+            new QRCode(qr,{text:url,width:80,height:80,correctLevel:QRCode.CorrectLevel.L});
+        }catch(e){qr.textContent='📷';}
+        $('deck-selector').classList.toggle('disabled',!isHost);
+        $('lobby-settings')?.classList.toggle('disabled',!isHost);
+        $('btn-start').style.display=isHost?'':'none';
+        $('lobby-status').textContent=isHost?'等待玩家加入后开始':'等待房主开始游戏...';
+    }
+
+    _updateLobby(state){
+        if(!state)return;
+        const ps=state.players;
+        $('lobby-player-count').textContent=ps.length;
+        let h='';
+        for(const p of ps){
+            const isH=p.joinOrder===0, isMe=p.id===this.game.myPlayerId;
+            h+=`<div class="player-slot"><div class="player-dot ${p.connected?'':'offline'}"></div><span>${p.name}${isMe?' (我)':''}</span>${isH?'<span class="player-host-badge">房主</span>':''}</div>`;
+        }
+        $('lobby-player-list').innerHTML=h;
+        const cpp=Math.floor((state.deckCount*54)/Math.max(ps.length,1));
+        $('deck-hint').textContent=`每人约 ${cpp} 张牌`;
+        this.selectedDeckCount=state.deckCount;
+        $$('.deck-option').forEach(el=>el.classList.toggle('selected',parseInt(el.dataset.count)===state.deckCount));
+        // Sync settings
+        const cm=state.challengeMode||'sequential';
+        $('lobby-mode-seq')?.classList.toggle('selected',cm==='sequential');
+        $('lobby-mode-ffa')?.classList.toggle('selected',cm==='freeforall');
+        const sl=state.showPlayLog!==false;
+        $('toggle-play-log')?.classList.toggle('active',sl);
+        $('btn-start').disabled=ps.filter(p=>p.connected).length<2;
+    }
+
+    selectDeckCount(c){
+        if(!this.net?.isHost)return;
+        this.selectedDeckCount=c;
+        if(this.game)this.game.sendDeckCount(c);
+        $$('.deck-option').forEach(el=>el.classList.toggle('selected',parseInt(el.dataset.count)===c));
+    }
+
+    // ─── Game callbacks ───
+    _bindCallbacks(){
+        this.game.onStateUpdate=s=>this._onState(s);
+        this.game.onHandUpdate=h=>this._onHand(h);
+        this.game.onChallengeResult=d=>this._onChResult(d);
+        this.game.onGameOver=d=>this._onGameOver(d);
+        this.game.onLog=(m,i,p)=>this._addLog(m,i,p);
+        this.game.onLogClear=()=>{$('game-log').innerHTML='';};
+        this.game.onRequestDeclare=()=>this._showDeclareModal();
+        this.net.onPeerConnect=(pid)=>{};
+        this.net.onPeerDisconnect=(pid)=>{
+            if(this.net.isHost&&this.game)this.game.handleDisconnect(pid);
+            else if(pid===this.net.hostPeerId)this._hostLost();
+        };
+    }
+
+    _onState(state){
+        if(state.phase==='LOBBY'){
+            this._updateLobby(state);
+            const active=$$('.screen.active')[0]?.id;
+            if(!active||active==='screen-home')showScreen('lobby');
+            return;
+        }
+        if(state.phase!=='GAME_OVER'){
+            const active=$$('.screen.active')[0]?.id;
+            if(active!=='screen-game')showScreen('game');
+        }
+        this._renderGame(state);
+    }
+
+    _renderGame(s){
+        $('game-declared-rank').textContent=s.declaredRank||'-';
+        $('game-room-tag').textContent=this.net.roomCode;
+        const cur=s.players[s.currentPlayerIndex];
+        const dealer=s.players[s.dealerIndex];
+
+        if(s.phase==='DECLARING')
+            $('game-turn-info').textContent=`${dealer?.name||'?'} 正在宣言...`;
+        else if(s.phase==='TURN')
+            $('game-turn-info').textContent=cur?.id===this.game.myPlayerId?'💡 轮到你了！':`等待 ${cur?.name||'?'}`;
+        else if(s.phase==='RESOLVING')
+            $('game-turn-info').textContent='⚡ 质疑中...';
+        else $('game-turn-info').textContent='';
+
+        this._renderOpponents(s);
+        this._renderTable(s);
+        this._renderActions(s);
+        this._updateFFA(s);
+    }
+
+    _renderOpponents(s){
+        let h='';
+        for(let i=0;i<s.players.length;i++){
+            const p=s.players[i];
+            if(p.id===this.game.myPlayerId)continue;
+            const isTurn=i===s.currentPlayerIndex&&s.phase==='TURN';
+            const isD=i===s.dealerIndex;
+            let handVis='';
+            const dcs=p.deckHandCounts||[p.handCount];
+            for(let d=0;d<dcs.length;d++){
+                if(dcs[d]>0) handVis+=`<span class="opp-deck"><span class="mini-card-back" data-deck="${d}"></span>\u00d7${dcs[d]}</span>`;
+            }
+            if(!handVis) handVis='<span style="font-size:.8rem;color:#aaa;">0</span>';
+            h+=`<div class="opponent-card ${isTurn?'is-turn':''} ${isD?'is-dealer':''} ${!p.connected?'disconnected':''}">
+                <div class="opponent-name">${p.name}</div><div class="opponent-hand-vis">${handVis}</div></div>`;
+        }
+        $('opponents-area').innerHTML=h;
+    }
+
+    _renderTable(s){
+        const row=$('pool-cards-row');
+        const ct=s.tableCardCount;
+        let h=''; const mx=Math.min(ct,10);
+        for(let i=0;i<mx;i++){
+            const rot=(i*7-mx*3)+rng(-2,2);
+            const left=50+(i-mx/2)*12;
+            // Determine which deck this card came from via play log
+            let dk=0, accum=0;
+            for(const entry of (s.tablePlayLog||[])){
+                if(i<accum+entry.count){break;}
+                accum+=entry.count; dk=(dk+1)%3;
+            }
+            h+=`<div class="card card-sm face-down pool-card" data-deck="${dk%(this.selectedDeckCount||1)}" style="transform:rotate(${rot}deg);left:${left}px;"></div>`;
+        }
+        row.innerHTML=h;
+        $('pool-count').textContent=ct>0?`牌池: ${ct} 张牌`:'牌池空';
+        if(s.lastPlayerId&&s.lastPlayCount>0){
+            const lp=s.players.find(p=>p.id===s.lastPlayerId);
+            $('pool-last-play').textContent=`${lp?.name||'?'} 出了 ${s.lastPlayCount} 张`;
+        }else $('pool-last-play').textContent='';
+    }
+
+    _renderActions(s){
+        const myTurn=this.game.isMyTurn();
+        const canCh=this.game.canChallenge();
+        const hasPlayed=!!s.lastPlayerId;
+
+        $('btn-play').disabled=!(myTurn&&s.phase==='TURN'&&this.selectedCards.size>0);
+        $('btn-pass').disabled=!(myTurn&&s.phase==='TURN');
+        $('btn-challenge').disabled=!(canCh&&hasPlayed&&s.phase==='TURN'&&s.challengeMode==='sequential');
+        $('btn-challenge').style.display=s.challengeMode==='sequential'?'':'none';
+    }
+
+    _updateFFA(s){
+        const btn=$('btn-ffa-challenge');
+        if(s.challengeMode==='freeforall'&&s.phase==='TURN'&&s.lastPlayerId&&s.lastPlayerId!==this.game.myPlayerId)
+            btn.classList.add('visible');
+        else btn.classList.remove('visible');
+    }
+
+    // ─── Hand ───
+    _onHand(hand){
+        this.selectedCards.clear();
+        this._renderHand(hand);
+    }
+
+    _renderHand(hand){
+        const area=$('hand-area');
+        if(!hand||!hand.length){area.innerHTML='<div style="color:#aaa;font-size:.9rem;padding:20px;">没有手牌</div>';return;}
+        const sorted=sortCards(hand);
+        // Stacking density: 3 tiers
+        const nc=sorted.length;
+        const ml=nc<=10?3:nc<=25?-8:-18;
+        area.style.setProperty('--card-ml',ml+'px');
+        let h='';
+        for(let i=0;i<sorted.length;i++){
+            const c=sorted[i];
+            const rot=((i-sorted.length/2)*1.2).toFixed(1);
+            const sel=this.selectedCards.has(c.id)?'selected':'';
+            const isRed=RED_SUITS.has(c.suit), isJ=c.rank==='JOKER';
+            const sc=isJ?'card-joker':(isRed?'suit-red':'suit-black');
+            const sym=DECK_COLORS[c.deck]?.symbol||'';
+            const dr=isJ?(c.jokerType==='big'?'大王':'小王'):c.rank;
+            const ds=isJ?'🃏':c.suit;
+            h+=`<div class="card ${sc} ${sel}" data-id="${c.id}" data-deck="${c.deck}" style="--card-rot:${rot}deg" onclick="app.toggleCard('${c.id}')">
+                <span class="card-corner">${sym}</span><span class="card-rank">${dr}</span><span class="card-suit">${ds}</span></div>`;
+        }
+        area.innerHTML=h;
+        this._updatePlayBtn();
+    }
+
+    toggleCard(id){
+        if(this.selectedCards.has(id))this.selectedCards.delete(id);
+        else this.selectedCards.add(id);
+        $$('.hand-area .card').forEach(el=>el.classList.toggle('selected',this.selectedCards.has(el.dataset.id)));
+        this._updatePlayBtn();
+    }
+
+    _updatePlayBtn(){$('btn-play').disabled=!(this.game?.isMyTurn()&&this.selectedCards.size>0);}
+
+    _playCards(){
+        if(!this.selectedCards.size)return;
+        this.game.sendPlayCards([...this.selectedCards]);
+        this.selectedCards.clear();
+    }
+
+    // ─── Declare modal ───
+    _initRankGrid(){
+        let h='';
+        for(const r of RANKS)h+=`<button class="rank-btn" data-rank="${r}" onclick="app.selectRank('${r}')">${r}</button>`;
+        $('rank-grid').innerHTML=h;
+    }
+
+    _showDeclareModal(){
+        this.selectedRank=null;
+        $$('.rank-btn').forEach(b=>b.classList.remove('selected'));
+        $('btn-declare-confirm').disabled=true;
+        $('modal-declare').classList.add('active');
+    }
+
+    selectRank(r){
+        this.selectedRank=r;
+        $$('.rank-btn').forEach(b=>b.classList.toggle('selected',b.dataset.rank===r));
+        $('btn-declare-confirm').disabled=false;
+    }
+
+    selectChallengeMode(m){
+        if(!this.net?.isHost)return;
+        this.selectedChallengeMode=m;
+        if(this.game)this.game.net.sendToHost({type:'CHALLENGE_MODE',mode:m});
+    }
+
+    togglePlayLog(){
+        if(!this.net?.isHost)return;
+        const el=$('toggle-play-log');
+        const val=!el.classList.contains('active');
+        if(this.game)this.game.net.sendToHost({type:'SHOW_PLAY_LOG',value:val});
+    }
+
+    _confirmDeclare(){
+        if(!this.selectedRank)return;
+        this.game.sendDeclare(this.selectedRank);
+        $('modal-declare').classList.remove('active');
+    }
+
+    // ─── Challenge result ───
+    _onChResult(d){
+        const overlay=$('overlay-liar'), stamp=$('stamp-text');
+        stamp.classList.remove('animate','honest');
+        stamp.textContent=d.isLiar?'LIAR!':'HONEST!';
+        if(!d.isLiar)stamp.classList.add('honest');
+        overlay.classList.add('active');
+        void stamp.offsetWidth;
+        stamp.classList.add('animate');
+        if(navigator.vibrate)navigator.vibrate([100,50,100]);
+        $('screen-game')?.classList.add('shake');
+        setTimeout(()=>$('screen-game')?.classList.remove('shake'),300);
+
+        setTimeout(()=>{
+            overlay.classList.remove('active'); stamp.classList.remove('animate');
+            this._showChDetail(d);
+        },1200);
+    }
+
+    _showChDetail(d){
+        $('challenge-title').textContent=d.isLiar?'🎯 抓到骗子了！':'❌ 质疑失败！';
+        $('challenge-detail').textContent=`${d.challengerName} 质疑了 ${d.targetName}`;
+        let h='<div style="font-size:.85rem;color:#888;margin-bottom:6px;">翻开的牌 (声称是 '+d.declaredRank+'):</div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;">';
+        for(const c of d.cards){
+            const match=c.rank===d.declaredRank||c.isJoker;
+            h+=cardToHTML(c,'card-sm');
+        }
+        h+='</div>';
+        $('challenge-reveal-cards').innerHTML=h;
+        $('challenge-verdict').textContent=d.isLiar?`${d.targetName} 的牌里有假的！`:`${d.targetName} 的牌全是真的！`;
+        $('challenge-verdict').style.color=d.isLiar?'#2E7D32':'var(--stamp-red)';
+        $('challenge-penalty').textContent=`${d.loserName} 收走 ${d.totalCards||'所有'} 张牌`;
+        $('overlay-challenge').classList.add('active');
+        setTimeout(()=>$('overlay-challenge').classList.remove('active'),3500);
+    }
+
+    // ─── Game over ───
+    _onGameOver(d){
+        setTimeout(()=>{
+            showScreen('result');
+            $('result-winner-name').textContent=`🎉 ${d.winnerName} 🎉`;
+            const isMe=d.winnerId===this.game.myPlayerId;
+            $('result-detail').textContent=isMe?'你赢了！率先打光了所有手牌！':`${d.winnerName} 率先打光了所有手牌！`;
+            $('btn-play-again').style.display=this.net?.isHost?'':'none';
+        },1500);
+    }
+
+    _backHome(){
+        if(this.net){this.net.destroy();this.net=null;}
+        this.game=null; this.selectedCards.clear();
+        $('btn-ffa-challenge').classList.remove('visible');
+        $('overlay-challenge').classList.remove('active');
+        $('overlay-liar').classList.remove('active');
+        $('overlay-reconnect').classList.remove('active');
+        $('modal-declare').classList.remove('active');
+        $('game-log').innerHTML='';
+        showScreen('home');
+    }
+
+    // ─── Log ───
+    _addLog(msg,imp=false,isPlayInfo=false){
+        // Filter play info if disabled
+        if(isPlayInfo&&this.game?.state?.showPlayLog===false)return;
+        const log=$('game-log');
+        const e=document.createElement('div');
+        e.className='log-entry'+(imp?' important':''); e.textContent=msg;
+        log.appendChild(e); log.scrollTop=log.scrollHeight;
+        while(log.children.length>50)log.removeChild(log.firstChild);
+    }
+
+    // ─── Host migration ───
+    _hostLost(){
+        showToast('房主已断线');
+        $('overlay-reconnect').classList.add('active');
+        $('reconnect-text').textContent='房主已断线，正在迁移...';
+        const state=this.game?.state;
+        if(!state){
+            $('reconnect-text').textContent='无法恢复';
+            setTimeout(()=>{$('overlay-reconnect').classList.remove('active');this._backHome();},3000);
+            return;
+        }
+        const me=state.players.find(p=>p.id===this.game.myPlayerId);
+        if(!me){$('overlay-reconnect').classList.remove('active');this._backHome();return;}
+
+        // Lowest joinOrder (excluding host=0) becomes new host
+        const others=state.players.filter(p=>p.connected&&p.id!==this.game.myPlayerId&&p.joinOrder>0);
+        const shouldBeHost=others.every(p=>p.joinOrder>me.joinOrder);
+
+        if(shouldBeHost&&me.joinOrder>0){
+            setTimeout(()=>this._becomeHost(),2000);
+        } else {
+            setTimeout(()=>this._reconnectNewHost(),5500);
+        }
+    }
+
+    async _becomeHost(){
+        $('reconnect-text').textContent='正在接管房间...';
+        try{
+            const oldState=this.game.state, oldHand=this.game.myHand, code=this.net.roomCode;
+            this.net.destroy();
+            this.net=new NetworkManager();
+            this.net.isHost=true; this.net.roomCode=code;
+            const pid='lg-'+code+'-m'; this.net.hostPeerId=pid;
+
+            await new Promise((res,rej)=>{
+                this.net.peer=new Peer(pid,{debug:0});
+                this.net.peer.on('open',id=>{
+                    this.net.myPeerId=id;
+                    this.net.peer.on('connection',c=>this.net._setupConn(c));
+                    this.net._startHB(); res();
+                });
+                this.net.peer.on('error',rej);
+                setTimeout(()=>rej(new Error('timeout')),5000);
+            });
+
+            this.game=new GameEngine(this.net);
+            this.game.myName=localStorage.getItem('lg_playerName')||'玩家';
+            this._bindCallbacks();
+
+            this.game.fullState={
+                phase:oldState.phase,
+                players:oldState.players.map(p=>({...p,hand:p.id===this.game.myPlayerId?oldHand:[],connected:p.id===this.game.myPlayerId})),
+                currentPlayerIndex:oldState.currentPlayerIndex, dealerIndex:oldState.dealerIndex,
+                declaredRank:oldState.declaredRank, challengeMode:oldState.challengeMode,
+                tableCards:[], tablePlayLog:oldState.tablePlayLog||[],
+                lastPlayerId:oldState.lastPlayerId, lastPlayCount:oldState.lastPlayCount,
+                passCount:oldState.passCount, deckCount:oldState.deckCount,
+                discardPile:[], seq:(oldState.seq||0)+1
+            };
+            const myP=this.game.fullState.players.find(p=>p.id===this.game.myPlayerId);
+            if(myP){myP.peerId=this.net.myPeerId;myP.hand=oldHand;myP.handCount=oldHand.length;}
+            this.game.myHand=oldHand;
+            this.game._broadcastState();
+
+            showToast('你已成为新房主');
+            setTimeout(()=>$('overlay-reconnect').classList.remove('active'),2000);
+        }catch(e){
+            console.error('[MIGRATE]',e);
+            $('reconnect-text').textContent='迁移失败';
+            setTimeout(()=>{$('overlay-reconnect').classList.remove('active');this._backHome();},3000);
+        }
+    }
+
+    async _reconnectNewHost(){
+        $('reconnect-text').textContent='正在寻找新房主...';
+        const code=this.net.roomCode;
+        const newPid='lg-'+code+'-m';
+        const oldPlayerId=this.game?.myPlayerId||localStorage.getItem('lg_playerId');
+        const maxRetries=3;
+        for(let attempt=0;attempt<maxRetries;attempt++){
+            try{
+                if(attempt>0){
+                    $('reconnect-text').textContent=`重连中... (${attempt+1}/${maxRetries})`;
+                    await new Promise(r=>setTimeout(r,2500));
+                }
+                if(this.net)this.net.destroy();
+                this.net=new NetworkManager();
+                this.net.isHost=false; this.net.roomCode=code; this.net.hostPeerId=newPid;
+                await new Promise((res,rej)=>{
+                    this.net.peer=new Peer(undefined,{debug:0});
+                    this.net.peer.on('open',id=>{
+                        this.net.myPeerId=id;
+                        const conn=this.net.peer.connect(newPid,{reliable:true});
+                        conn.on('open',()=>{this.net.hostConn=conn;this.net._setupHostConn(conn);this.net._startHB();res();});
+                        conn.on('error',rej);
+                        setTimeout(()=>rej(new Error('timeout')),8000);
+                    });
+                    this.net.peer.on('error',rej);
+                });
+                this.game=new GameEngine(this.net);
+                this.game.myName=localStorage.getItem('lg_playerName')||'玩家';
+                if(oldPlayerId){this.game.myPlayerId=oldPlayerId;localStorage.setItem('lg_playerId',oldPlayerId);}
+                this._bindCallbacks();
+                // Use REJOIN to restore identity
+                this.net.sendToHost({type:'REJOIN',playerId:this.game.myPlayerId,name:this.game.myName});
+                showToast('已重新连接');
+                $('overlay-reconnect').classList.remove('active');
+                return;
+            }catch(e){
+                console.error(`[REJOIN attempt ${attempt+1}]`,e);
+            }
+        }
+        $('reconnect-text').textContent='重连失败';
+        setTimeout(()=>{$('overlay-reconnect').classList.remove('active');this._backHome();},3000);
+    }
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+const app = new App();
+</script>
+</body>
+</html>
