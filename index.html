@@ -87,11 +87,12 @@ body,html{
     100%{transform:scale(1) rotate(-12deg);opacity:.92}
 }
 .input-sketch{
-    background:rgba(255,255,255,.6);border:2px dashed var(--ink-black);border-radius:8px;
+    background:rgba(255,255,255,.6);border:2px dashed var(--ink-black);
+    border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
     padding:12px 16px;font-family:inherit;font-size:1.1rem;color:var(--text-brown);
-    text-align:center;width:220px;outline:none;
+    text-align:center;width:220px;outline:none;transform:rotate(-0.5deg);
 }
-.input-sketch:focus{border-style:solid;background:rgba(255,255,255,.9)}
+.input-sketch:focus{border-style:solid;background:rgba(255,255,255,.9);transform:rotate(0.5deg) scale(1.02)}
 .input-sketch::placeholder{color:#aaa}
 .home-actions{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%;max-width:280px}
 .home-join-row{display:flex;gap:8px;width:100%}
@@ -103,11 +104,15 @@ body,html{
 .doodle-btn{
     background:rgba(255,255,255,.8);border:3px solid var(--ink-black);
     padding:12px 24px;font-size:1.15rem;font-family:inherit;font-weight:bold;
-    color:var(--text-brown);border-radius:100px 25px 80px 30px/30px 70px 25px 90px;
+    color:var(--text-brown);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
     cursor:pointer;transition:all .1s;position:relative;white-space:nowrap;
+    transform:rotate(-0.5deg);
 }
-.doodle-btn:active{transform:scale(.95) rotate(-2deg);background:#eee}
-.doodle-btn:disabled{opacity:.4;transform:none}
+.doodle-btn:nth-child(odd){transform:rotate(-1deg)}
+.doodle-btn:nth-child(even){transform:rotate(1deg)}
+.doodle-btn:nth-child(3n){transform:rotate(0.5deg)}
+.doodle-btn:active{transform:scale(.95) rotate(0deg)!important;background:#eee}
+.doodle-btn:disabled{opacity:.4;transform:none!important}
 .doodle-btn.btn-wide{width:100%}
 .doodle-btn.btn-red{background:#ffecf0;color:var(--stamp-red);border-color:var(--stamp-red)}
 .doodle-btn.btn-blue{background:#e8f4fd;color:var(--marker-blue);border-color:var(--marker-blue)}
@@ -119,11 +124,20 @@ body,html{
    ═══════════════════════════════════════════════ */
 #screen-lobby{align-items:center;gap:16px;padding-top:20px}
 .lobby-header{font-size:1.6rem;font-weight:900;text-align:center;transform:rotate(-1deg)}
-.lobby-room-info{display:flex;align-items:center;gap:16px;padding:12px;background:rgba(255,255,255,.4);width:100%;max-width:360px}
+.lobby-room-info{
+    display:flex;align-items:center;gap:16px;padding:12px;
+    background:rgba(255,255,255,.4);width:100%;max-width:360px;
+    border:2px dashed var(--ink-black);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
+    transform:rotate(-0.5deg);
+}
 .lobby-room-code{font-size:2.2rem;font-weight:900;letter-spacing:5px;color:var(--marker-blue)}
 #lobby-qr{flex-shrink:0}
 #lobby-qr canvas{border-radius:4px}
-.lobby-players{width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3)}
+.lobby-players{
+    width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3);
+    border:2px solid var(--ink-black);border-radius:15px 225px 15px 255px/225px 15px 255px 15px;
+    transform:rotate(0.5deg);
+}
 .lobby-players h3{margin-bottom:8px;transform:rotate(-.5deg)}
 .player-slot{display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px dashed #ccc;font-size:1.1rem}
 .player-slot:last-child{border-bottom:none}
@@ -132,13 +146,18 @@ body,html{
 .player-host-badge{font-size:.7rem;background:var(--marker-orange);color:#fff;padding:1px 6px;border-radius:4px;margin-left:4px}
 
 /* Deck selector */
-.deck-selector{width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3);text-align:center}
+.deck-selector{
+    width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3);text-align:center;
+    border:2px solid var(--ink-black);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
+    transform:rotate(-0.3deg);
+}
 .deck-selector h3{margin-bottom:10px;transform:rotate(.5deg)}
 .deck-options{display:flex;justify-content:center;gap:12px}
 .deck-option{
     width:90px;padding:10px 6px;background:rgba(255,255,255,.6);
-    border:2px dashed var(--ink-black);border-radius:12px;cursor:pointer;
-    text-align:center;transition:all .15s;position:relative;
+    border:2px dashed var(--ink-black);border-radius:6px 14px 5px 12px;
+    cursor:pointer;text-align:center;transition:all .15s;position:relative;
+    box-shadow:2px 2px 0 rgba(0,0,0,.05);
 }
 .deck-option.selected{
     border:3px solid var(--ink-black);border-style:solid;
@@ -150,7 +169,11 @@ body,html{
 .deck-option .deck-colors{display:flex;gap:3px;justify-content:center;margin-top:6px}
 .deck-color-dot{width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.2)}
 .deck-selector.disabled{opacity:.5;pointer-events:none}
-.lobby-settings{width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3)}
+.lobby-settings{
+    width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3);
+    border:2px solid var(--ink-black);border-radius:15px 225px 10px 225px/225px 15px 225px 15px;
+    transform:rotate(0.3deg);
+}
 .lobby-settings h3{margin-bottom:10px;transform:rotate(-.5deg)}
 .lobby-settings.disabled{opacity:.5;pointer-events:none}
 .setting-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #ccc}
@@ -189,32 +212,45 @@ body,html{
 .game-header{
     display:flex;justify-content:space-between;align-items:center;
     padding:6px 10px;font-size:1.4rem;background:rgba(255,255,255,.3);
-    border-bottom:2px dashed #ccc;flex-shrink:0;min-height:42px;
+    border-bottom:3px solid var(--ink-black);border-radius:0 0 255px 5px/5px 225px 5px 255px;
+    flex-shrink:0;min-height:42px;position:relative;
 }
-.game-header .declared-rank{font-size:2rem;font-weight:900;color:var(--stamp-red)}
-.game-header .turn-info{font-size:1.3rem;color:#888}
+.game-header::after{content:'';position:absolute;bottom:2px;left:0;right:0;height:2px;background:var(--ink-black);opacity:.3;transform:rotate(-0.5deg);pointer-events:none}
+.game-header .declared-rank{font-size:2rem;font-weight:900;color:var(--stamp-red);transform:rotate(-2deg)}
+.game-header .turn-info{font-size:1.3rem;color:#555;transition:all .15s;font-weight:bold;transform:rotate(1deg)}
+.game-header .turn-info.my-turn{font-size:1.9rem;font-weight:900;color:#100f0f;transform:rotate(-3deg) scale(1.1);text-shadow:3px 3px 0 rgba(220,50,50,.2);z-index:3}
 
 /* Opponents area */
-.opponents-area{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:8px 4px;flex-shrink:0;min-height:60px}
+.opponents-area{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;padding:12px 4px;flex-shrink:0;min-height:60px}
 .opponent-card{
     display:flex;flex-direction:column;align-items:center;padding:6px 10px;
-    background:rgba(255,255,255,.35);border-radius:10px;min-width:70px;position:relative;
+    background:#fff;border:2px solid var(--ink-black);
+    border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
+    min-width:70px;position:relative;box-shadow:3px 3px 0 rgba(0,0,0,.15);
+    transform:rotate(var(--opp-rot,0deg));transition:transform .2s
 }
-.opponent-card.is-turn{background:rgba(255,235,59,.3);box-shadow:0 0 0 2px var(--marker-orange);border-radius:10px}
+.opponent-card.is-turn{background:#fff9c4;box-shadow:0 0 0 3px var(--marker-orange), 3px 3px 0 rgba(0,0,0,.15);border-color:var(--marker-orange)}
 .opponent-card.is-dealer::after{
-    content:'庄';position:absolute;top:-6px;right:-4px;
-    background:var(--stamp-red);color:#fff;font-size:.6rem;
-    width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    content:'庄';position:absolute;top:-8px;right:-6px;
+    background:var(--stamp-red);color:#fff;font-size:.7rem;font-weight:900;
+    width:20px;height:20px;border-radius:40% 60% 70% 30%/40% 50% 60% 50%;
+    display:flex;align-items:center;justify-content:center;transform:rotate(15deg);box-shadow:1px 1px 0 rgba(0,0,0,.2);
 }
-.opponent-name{font-size:1.25rem;font-weight:bold;max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.opponent-card.is-winner{background:#fffde7;border:3px solid #ffb300}
+.opponent-card.is-winner::before{content:'👑';position:absolute;top:-16px;left:50%;transform:translateX(-50%) rotate(-10deg);font-size:1.4rem;z-index:2;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.2))}
+.opponent-name{font-size:1.1rem;font-weight:900;max-width:75px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transform:rotate(-1deg);margin-bottom:2px}
 .opponent-count{font-size:1.9rem;font-weight:900}
-.opponent-card.disconnected{opacity:.4}
-.opponent-hand-vis{display:flex;gap:5px;align-items:center;margin-top:2px;flex-wrap:wrap;justify-content:center}
-.opp-deck{display:flex;align-items:center;gap:2px;font-size:1.6rem;font-weight:900}
-.mini-card-back{width:18px;height:24px;border-radius:2px;border:1.5px solid;display:inline-block;position:relative;vertical-align:middle}
-.mini-card-back[data-deck="0"]{background:var(--deck-0-color);border-color:var(--deck-0-ink)}
-.mini-card-back[data-deck="1"]{background:var(--deck-1-color);border-color:var(--deck-1-ink)}
-.mini-card-back[data-deck="2"]{background:var(--deck-2-color);border-color:var(--deck-2-ink)}
+.opponent-card.disconnected{opacity:.6;background:#eee;border-style:dashed}
+.opponent-hand-vis{display:flex;gap:4px;align-items:center;margin-top:2px;flex-wrap:wrap;justify-content:center}
+.opp-deck{display:flex;align-items:center;gap:2px;font-size:1.4rem;font-weight:900;color:var(--ink-black)}
+.mini-card-back{
+    width:16px;height:22px;border:1.5px solid var(--ink-black);
+    border-radius:2px 5px 3px 4px;display:inline-block;position:relative;vertical-align:middle;
+    box-shadow:1px 1px 0 rgba(0,0,0,.1);background:#fff
+}
+.mini-card-back[data-deck="0"]{background:repeating-linear-gradient(45deg,var(--deck-0-color),var(--deck-0-color) 4px,#fff 4px,#fff 6px)}
+.mini-card-back[data-deck="1"]{background:repeating-linear-gradient(45deg,var(--deck-1-color),var(--deck-1-color) 4px,#fff 4px,#fff 6px)}
+.mini-card-back[data-deck="2"]{background:repeating-linear-gradient(45deg,var(--deck-2-color),var(--deck-2-color) 4px,#fff 4px,#fff 6px)}
 .mini-card-back::after{content:'?';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:9px;font-weight:900}
 
 /* Table area */
@@ -223,13 +259,12 @@ body,html{
     width:240px;height:130px;max-height:130px;padding:10px;position:relative;
     display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
     overflow:hidden;
-    /* Hand-drawn wood texture */
-    background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='130'%3E%3Cdefs%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03 0.15' numOctaves='3' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3Cline x1='0' y1='18' x2='250' y2='20' stroke='%23000' stroke-width='.4' opacity='.06'/%3E%3Cline x1='0' y1='45' x2='250' y2='43' stroke='%23000' stroke-width='.5' opacity='.05'/%3E%3Cline x1='0' y1='72' x2='250' y2='75' stroke='%23000' stroke-width='.3' opacity='.07'/%3E%3Cline x1='0' y1='100' x2='250' y2='97' stroke='%23000' stroke-width='.4' opacity='.05'/%3E%3C/svg%3E") center/cover,
-        linear-gradient(148deg, #C9A870 0%, #BF9B5E 20%, #A6804E 45%, #B89060 70%, #C4A265 100%);
-    border:3px solid #7A5A10;
-    border-radius:255px 12px 225px 12px/12px 225px 12px 255px;
-    box-shadow:inset 0 2px 6px rgba(0,0,0,.2), 3px 3px 0 rgba(0,0,0,.12);
+    /* Sketchy pool area */
+    background:rgba(0,0,0,.03);
+    border:4px dashed var(--ink-black);
+    border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
+    box-shadow:inset 0 0 20px rgba(0,0,0,.05);
+    transform:rotate(-1deg);
 }
 .pool-cards-row{position:relative;width:100%;height:68px;flex-shrink:0}
 .pool-card{position:absolute}
@@ -242,7 +277,10 @@ body,html{
 
 /* Action area */
 .action-area{display:flex;justify-content:space-around;align-items:center;padding:8px 4px;gap:6px;flex-shrink:0;min-height:54px;flex-wrap:wrap}
-.action-area .doodle-btn{flex:1;min-width:0;padding:10px 8px;font-size:1rem;text-align:center}
+.action-area .doodle-btn{flex:1;min-width:0;padding:10px 8px;font-size:1rem;text-align:center;box-shadow:3px 3px 0 rgba(0,0,0,.15);transition:transform .15s,box-shadow .15s}
+.action-area .doodle-btn:active{box-shadow:1px 1px 0 rgba(0, 0, 0, 0.976);transform:translateY(1px)}
+@keyframes btn-wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-3deg)}40%{transform:rotate(2deg)}60%{transform:rotate(-1.5deg)}80%{transform:rotate(1deg)}}
+.action-area #btn-play.has-sel{animation:btn-wiggle .35s ease}
 .sel-count{font-size:.85rem;color:var(--stamp-red);font-weight:900;min-width:2em;text-align:center;white-space:nowrap}
 
 /* Hand area */
@@ -254,12 +292,21 @@ body,html{
 
 /* Game log — below hand area */
 .game-log{
-    min-height:80px;max-height:120px;overflow-y:auto;width:100%;padding:6px 10px;flex-shrink:0;
-    background:rgba(255,255,255,.15);border-top:1.5px dashed #d5c8a8;
+    min-height:80px;max-height:120px;overflow-y:auto;width:100%;padding:10px 12px;flex-shrink:0;
+    background:#faf8ef;border-top:3px solid var(--ink-black);
     padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
+    box-shadow:inset 0 4px 10px rgba(0,0,0,.05);
+    /* Torn paper edge effect would be cool but keep it simpler: distinct section */
+    position:relative;
 }
-.game-log .log-entry{font-size:.78rem;color:#999;line-height:1.4}
-.game-log .log-entry.important{color:var(--stamp-red);font-weight:bold}
+.game-log::before{content:'';position:absolute;top:-4px;left:0;right:0;height:4px;background:repeating-linear-gradient(45deg,transparent,transparent 5px,#fff 5px,#fff 10px);z-index:2}
+.game-log .log-entry{
+    font-size:.85rem;color:var(--text-brown);line-height:1.4;
+    font-family:"Patrick Hand",cursive,sans-serif;
+    border-bottom:1px dashed rgba(0,0,0,.1);padding:2px 0;
+}
+.game-log .log-entry:last-child{border-bottom:none}
+.game-log .log-entry.important{color:var(--stamp-red);font-weight:900;font-size:.95rem;background:rgba(255,230,230,.3);transform:rotate(-0.5deg);padding:4px}
 .hand-area::-webkit-scrollbar{display:none}
 .hand-area .card{margin-left:var(--card-ml,3px)}
 .hand-area .card:first-child{margin-left:0}
@@ -322,7 +369,11 @@ body,html{
    ═══════════════════════════════════════════════ */
 .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:50;justify-content:center;align-items:center;padding:20px}
 .modal-overlay.active{display:flex}
-.modal-box{background:var(--paper-bg);padding:20px;max-width:340px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:6px 6px 0 rgba(0,0,0,.15)}
+.modal-box{
+    background:var(--paper-bg);padding:20px;max-width:340px;width:100%;max-height:85vh;overflow-y:auto;
+    border:3px solid var(--ink-black);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
+    box-shadow:6px 6px 0 rgba(0,0,0,.15);
+}
 .modal-box h2{text-align:center;margin-bottom:12px;transform:rotate(-1deg);font-size:1.4rem}
 .rank-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
 
@@ -382,7 +433,11 @@ body,html{
 
 #overlay-challenge{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:90;background:rgba(0,0,0,.5);justify-content:center;align-items:center;flex-direction:column;gap:16px;padding:20px;cursor:pointer}
 #overlay-challenge.active{display:flex}
-.challenge-result-box{background:var(--paper-bg);padding:20px;text-align:center;max-width:320px;width:100%;box-shadow:6px 6px 0 rgba(0,0,0,.15);cursor:default}
+.challenge-result-box{
+    background:var(--paper-bg);padding:20px;text-align:center;max-width:320px;width:100%;
+    border:3px solid var(--ink-black);border-radius:15px 225px 15px 255px/225px 15px 255px 15px;
+    box-shadow:6px 6px 0 rgba(0,0,0,.15);cursor:default
+}
 .challenge-result-box h2{font-size:1.5rem;margin-bottom:8px}
 .challenge-result-box .result-detail{font-size:1rem;margin-bottom:12px;color:#666}
 .challenge-dismiss-hint{color:rgba(255,255,255,.6);font-size:.8rem;margin-top:8px;text-align:center}
@@ -419,7 +474,7 @@ body,html{
     position:fixed;bottom:180px;right:12px;z-index:40;width:64px;height:64px;
     border-radius:50%;background:var(--stamp-red);color:#fff;border:3px solid #b71c1c;
     font-family:inherit;font-weight:900;font-size:.8rem;cursor:pointer;
-    box-shadow:3px 3px 0 rgba(0,0,0,.2);display:none;align-items:center;justify-content:center;
+    box-shadow:3px 3px 0 rgba(0, 0, 0, 0.972);display:none;align-items:center;justify-content:center;
     animation:pulse 1.5s infinite;
 }
 .ffa-challenge-btn.visible{display:flex}
@@ -447,6 +502,7 @@ body,html{
 .rules-box{
     background:var(--paper-bg);padding:20px 18px;max-width:400px;width:100%;
     max-height:85vh;overflow-y:auto;box-shadow:6px 6px 0 rgba(0,0,0,.15);
+    border:3px solid var(--ink-black);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
     -webkit-overflow-scrolling:touch;
 }
 .rules-box::-webkit-scrollbar{width:4px}
@@ -1109,6 +1165,7 @@ class GameEngine {
 
         fs.phase='DECLARING'; fs.tableCards=[]; fs.tablePlayLog=[]; fs.discardPile=[];
         fs.lastPlayerId=null; fs.lastPlayCount=0; fs.passCount=0;
+        fs.winners=[];
         fs.dealerIndex=rng(0,fs.players.length-1);
         // Make sure dealer is connected
         while(!fs.players[fs.dealerIndex].connected) fs.dealerIndex=(fs.dealerIndex+1)%fs.players.length;
@@ -1196,7 +1253,7 @@ class GameEngine {
         fs.passCount++; fs.seq++;
         this._log(`${p.name} 跳过了`,false,true);
 
-        const active=fs.players.filter(p=>p.connected);
+        const active=fs.players.filter(p=>p.connected&&!(fs.winners||[]).includes(p.id));
         if(fs.lastPlayerId && fs.passCount>=active.length-1){
             this._roundEnd();
         } else {
@@ -1250,14 +1307,19 @@ class GameEngine {
             true
         );
 
-        // Check win
-        const winner=fs.players.find(p=>p.connected&&p.handCount===0);
+        // Check win — find player with 0 cards who hasn't already won
+        const winner=fs.players.find(p=>p.connected&&p.handCount===0&&!(fs.winners||[]).includes(p.id));
         if(winner){this._gameOver(winner);return;}
 
         // Clear table, new round — winner of challenge becomes dealer
         fs.tableCards=[]; fs.tablePlayLog=[];
         fs.lastPlayerId=null; fs.lastPlayCount=0; fs.passCount=0;
-        const nextDealer=isLiar?challenger:target;
+        let nextDealer=isLiar?challenger:target;
+        // If next dealer already won, pick next active player
+        if((fs.winners||[]).includes(nextDealer.id)){
+            const rem=fs.players.filter(p=>p.connected&&p.handCount>0&&!(fs.winners||[]).includes(p.id));
+            if(rem.length>0) nextDealer=rem[0];
+        }
         const nextDealerIdx=fs.players.indexOf(nextDealer);
         fs.dealerIndex=nextDealerIdx; fs.currentPlayerIndex=nextDealerIdx;
         fs.phase='DECLARING'; fs.declaredRank=null; fs.seq++;
@@ -1277,26 +1339,59 @@ class GameEngine {
         this._log(`所有人都跳过了，${fs.tableCards.length} 张牌进入弃牌堆`);
 
         const last=this._pById(fs.lastPlayerId);
-        if(last&&last.handCount===0){this._gameOver(last);return;}
+        if(last&&last.handCount===0&&!(fs.winners||[]).includes(last.id)){this._gameOver(last);return;}
 
-        const lastIdx=fs.players.indexOf(last);
+        let lastIdx=fs.players.indexOf(last);
         fs.tableCards=[]; fs.tablePlayLog=[];
         fs.lastPlayerId=null; fs.lastPlayCount=0; fs.passCount=0;
+        // If last player is a winner, pick from remaining
+        if((fs.winners||[]).includes(last.id)){
+            const rem=fs.players.filter(p=>p.connected&&p.handCount>0&&!(fs.winners||[]).includes(p.id));
+            if(rem.length>0) lastIdx=fs.players.indexOf(rem[0]);
+        }
         fs.dealerIndex=lastIdx; fs.currentPlayerIndex=lastIdx;
         fs.phase='DECLARING'; fs.declaredRank=null; fs.seq++;
 
+        const newDealer=fs.players[lastIdx];
         this._broadcastState();
-        if(last.peerId===this.net.myPeerId){if(this.onRequestDeclare)this.onRequestDeclare();}
-        else this.net.send(last.peerId,{type:'REQUEST_DECLARE'});
+        if(newDealer.peerId===this.net.myPeerId){if(this.onRequestDeclare)this.onRequestDeclare();}
+        else this.net.send(newDealer.peerId,{type:'REQUEST_DECLARE'});
     }
 
-    // ─── HOST: Game over ───
+    // ─── HOST: Game over (or winner continue) ───
     _gameOver(winner){
         const fs=this.fullState;
-        fs.phase='GAME_OVER'; fs.seq++;
-        this.net.broadcastAndSelf({type:'GAME_OVER',winnerId:winner.id,winnerName:winner.name});
+        if(!fs.winners)fs.winners=[];
+        fs.winners.push(winner.id);
         this._log(`🏆 ${winner.name} 获胜！率先打光了所有手牌！`,true);
-        this._broadcastState();
+
+        // Count remaining active players (connected, have cards, not yet won)
+        const remaining=fs.players.filter(p=>p.connected&&p.handCount>0&&!fs.winners.includes(p.id));
+        if(remaining.length<=1){
+            // True game over
+            fs.phase='GAME_OVER'; fs.seq++;
+            this.net.broadcastAndSelf({type:'GAME_OVER',winnerId:winner.id,winnerName:winner.name,isFinal:true,winners:fs.winners.map(wid=>{const wp=this._pById(wid);return wp?wp.name:'?';})});
+            this._broadcastState();
+            return;
+        }
+
+        // Winner exits the round, game continues for rest
+        this.net.broadcastAndSelf({type:'GAME_OVER',winnerId:winner.id,winnerName:winner.name,isFinal:false,remainCount:remaining.length});
+
+        // Clear table, start new round
+        fs.tableCards=[]; fs.tablePlayLog=[];
+        fs.lastPlayerId=null; fs.lastPlayCount=0; fs.passCount=0;
+        // Pick next dealer from remaining players
+        let nd=fs.players.indexOf(remaining[rng(0,remaining.length-1)]);
+        fs.dealerIndex=nd; fs.currentPlayerIndex=nd;
+        fs.phase='DECLARING'; fs.declaredRank=null; fs.seq++;
+
+        setTimeout(()=>{
+            this._broadcastState();
+            const dealer=fs.players[fs.dealerIndex];
+            if(dealer.peerId===this.net.myPeerId){if(this.onRequestDeclare)this.onRequestDeclare();}
+            else this.net.send(dealer.peerId,{type:'REQUEST_DECLARE'});
+        },2500);
     }
 
     // ─── HOST: Advance turn ───
@@ -1304,7 +1399,11 @@ class GameEngine {
         const fs=this.fullState;
         const n=fs.players.length;
         let next=(fs.currentPlayerIndex+1)%n, att=0;
-        while(!fs.players[next].connected&&att<n){next=(next+1)%n;att++;}
+        while(att<n){
+            const p=fs.players[next];
+            if(p.connected && p.handCount>0 && !(fs.winners||[]).includes(p.id)) break;
+            next=(next+1)%n; att++;
+        }
         fs.currentPlayerIndex=next;
     }
 
@@ -1335,7 +1434,8 @@ class GameEngine {
             lastPlayerId:fs.lastPlayerId, lastPlayCount:fs.lastPlayCount,
             passCount:fs.passCount, deckCount:fs.deckCount,
             discardCount:(fs.discardPile||[]).length, seq:fs.seq,
-            showPlayLog:fs.showPlayLog!==false
+            showPlayLog:fs.showPlayLog!==false,
+            winners:fs.winners||[]
         };
         this.net.broadcastAndSelf({type:'STATE_UPDATE',state:s});
     }
@@ -1372,7 +1472,7 @@ class GameEngine {
         if(cur&&cur.id===dcPlayer.id&&!cur.connected){
             if(fs.phase==='TURN'){
                 fs.passCount++;
-                const active=fs.players.filter(p=>p.connected);
+                const active=fs.players.filter(p=>p.connected&&!(fs.winners||[]).includes(p.id));
                 if(fs.lastPlayerId&&fs.passCount>=active.length){
                     this._roundEnd();
                 } else {this._advanceTurn();this._broadcastState();}
@@ -1462,6 +1562,7 @@ class App {
         if(joker) joker.classList.remove('wobble');
         if(stamp){stamp.classList.remove('slam');void stamp.offsetWidth;stamp.classList.add('slam');}
         if(navigator.vibrate) navigator.vibrate(50);
+        try{SFX.boxcrash();}catch(e){}
     }
 
     _resetHomeStamp(){
@@ -1641,13 +1742,16 @@ class App {
         const cur=s.players[s.currentPlayerIndex];
         const dealer=s.players[s.dealerIndex];
 
+        const ti=$('game-turn-info');
+        const isMyTurn=s.phase==='TURN'&&cur?.id===this.game.myPlayerId;
         if(s.phase==='DECLARING')
-            $('game-turn-info').textContent=`${dealer?.name||'?'} 正在宣言...`;
+            ti.textContent=`${dealer?.name||'?'} 正在宣言...`;
         else if(s.phase==='TURN')
-            $('game-turn-info').textContent=cur?.id===this.game.myPlayerId?'💡 轮到你了！':`等待 ${cur?.name||'?'}`;
+            ti.textContent=isMyTurn?'💡 轮到你了！':`等待 ${cur?.name||'?'}`;
         else if(s.phase==='RESOLVING')
-            $('game-turn-info').textContent='⚡ 质疑中...';
-        else $('game-turn-info').textContent='';
+            ti.textContent='⚡ 质疑中...';
+        else ti.textContent='';
+        ti.classList.toggle('my-turn',isMyTurn);
 
         this._renderOpponents(s);
         this._renderTable(s);
@@ -1670,7 +1774,11 @@ class App {
                 if(dcs[d]>0) handVis+=`<span class="opp-deck"><span class="mini-card-back" data-deck="${d}"></span>\u00d7${dcs[d]}</span>`;
             }
             if(!handVis) handVis='<span style="font-size:.8rem;color:#aaa;">0</span>';
-            h+=`<div class="opponent-card ${isTurn?'is-turn':''} ${isD?'is-dealer':''} ${!p.connected?'disconnected':''}" data-pid="${p.id}">
+            const isW=(s.winners||[]).includes(p.id);
+            // Random rotation for sketchy feel (stable per render not ideal, preferably use stored hash)
+            // But we can just use player ID to determine rotation to keep it stable
+            const rot = (parseInt(p.id.slice(-4),16)%6 - 3); 
+            h+=`<div class="opponent-card ${isTurn?'is-turn':''} ${isD?'is-dealer':''} ${isW?'is-winner':''} ${!p.connected?'disconnected':''}" data-pid="${p.id}" style="--opp-rot:${rot}deg">
                 <div class="opponent-name">${p.name}</div><div class="opponent-hand-vis">${handVis}</div></div>`;
         }
         $('opponents-area').innerHTML=h;
@@ -1782,9 +1890,16 @@ class App {
     }
 
     _updatePlayBtn(){
-        $('btn-play').disabled=!(this.game?.isMyTurn()&&this.selectedCards.size>0);
+        const canPlay=this.game?.isMyTurn()&&this.selectedCards.size>0;
+        const btn=$('btn-play');
+        btn.disabled=!canPlay;
         const n=this.selectedCards.size;
         $('sel-count').textContent=n>0?`×${n}`:'';
+        // Wiggle animation on selection change
+        if(n>0){
+            btn.classList.remove('has-sel');void btn.offsetWidth;
+            btn.classList.add('has-sel');
+        } else btn.classList.remove('has-sel');
     }
 
     _playCards(){
@@ -1919,13 +2034,25 @@ class App {
 
     // ─── Game over ───
     _onGameOver(d){
-        setTimeout(()=>{
-            showScreen('result');
-            $('result-winner-name').textContent=`🎉 ${d.winnerName} 🎉`;
+        if(d.isFinal){
+            // True end of game — show result screen
+            setTimeout(()=>{
+                showScreen('result');
+                const ranks=d.winners||[d.winnerName];
+                $('result-winner-name').textContent=`🎉 ${ranks.join(' > ')} 🎉`;
+                const isMe=d.winners?.some?d.winners.some((_,i)=>i===0&&d.winnerId===this.game.myPlayerId):d.winnerId===this.game.myPlayerId;
+                $('result-detail').textContent=`游戏结束！排名: ${ranks.join(' › ')}`;
+                $('btn-play-again').style.display=this.net?.isHost?'':'none';
+            },1500);
+        } else {
+            // Someone won but game continues
             const isMe=d.winnerId===this.game.myPlayerId;
-            $('result-detail').textContent=isMe?'你赢了！率先打光了所有手牌！':`${d.winnerName} 率先打光了所有手牌！`;
-            $('btn-play-again').style.display=this.net?.isHost?'':'none';
-        },1500);
+            if(isMe){
+                showToast('🏆 你赢了！等待其他人继续对局...',3000);
+            } else {
+                showToast(`🏆 ${d.winnerName} 获胜！剩余 ${d.remainCount} 人继续`,3000);
+            }
+        }
     }
 
     _backHome(){
