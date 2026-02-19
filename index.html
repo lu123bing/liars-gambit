@@ -59,7 +59,33 @@ body,html{
 #screen-home{justify-content:center;align-items:center;gap:20px;text-align:center}
 .home-title{font-size:2.8rem;font-weight:900;transform:rotate(-2deg);line-height:1.1;text-shadow:3px 3px 0 rgba(0,0,0,.08)}
 .home-subtitle{font-size:1.3rem;color:var(--stamp-red);transform:rotate(1deg);margin-top:-8px}
-.home-card-deco{font-size:4rem;transform:rotate(-8deg);filter:drop-shadow(2px 2px 0 rgba(0,0,0,.1))}
+.home-card-deco{
+    font-size:6rem;transform:rotate(-8deg);filter:drop-shadow(2px 2px 0 rgba(0,0,0,.1));
+    position:relative;display:inline-block;
+}
+.home-card-deco.wobble{animation:joker-wobble 1.8s ease-in-out infinite}
+@keyframes joker-wobble{
+    0%,100%{transform:rotate(-8deg) scale(1)}
+    15%{transform:rotate(-14deg) scale(1.04)}
+    30%{transform:rotate(-3deg) scale(.97)}
+    50%{transform:rotate(-11deg) scale(1.02)}
+    70%{transform:rotate(-5deg) scale(.98)}
+    85%{transform:rotate(-12deg) scale(1.03)}
+}
+.home-liar-stamp{
+    position:absolute;top:-10px;right:-30px;
+    color:var(--stamp-red);border:4px double var(--stamp-red);
+    padding:2px 8px;font-size:1.1rem;font-weight:900;letter-spacing:2px;
+    background:rgba(255,255,255,.85);border-radius:4px;
+    opacity:0;transform:scale(3) rotate(20deg);pointer-events:none;
+}
+.home-liar-stamp.slam{animation:home-stamp-slam .35s forwards}
+@keyframes home-stamp-slam{
+    0%{transform:scale(3) rotate(20deg);opacity:0}
+    65%{transform:scale(.9) rotate(-14deg);opacity:1}
+    80%{transform:scale(1.08) rotate(-10deg);opacity:1}
+    100%{transform:scale(1) rotate(-12deg);opacity:.92}
+}
 .input-sketch{
     background:rgba(255,255,255,.6);border:2px dashed var(--ink-black);border-radius:8px;
     padding:12px 16px;font-family:inherit;font-size:1.1rem;color:var(--text-brown);
@@ -162,11 +188,11 @@ body,html{
 
 .game-header{
     display:flex;justify-content:space-between;align-items:center;
-    padding:6px 10px;font-size:1rem;background:rgba(255,255,255,.3);
-    border-bottom:2px dashed #ccc;flex-shrink:0;min-height:38px;
+    padding:6px 10px;font-size:1.4rem;background:rgba(255,255,255,.3);
+    border-bottom:2px dashed #ccc;flex-shrink:0;min-height:42px;
 }
-.game-header .declared-rank{font-size:1.4rem;font-weight:900;color:var(--stamp-red)}
-.game-header .turn-info{font-size:.85rem;color:#888}
+.game-header .declared-rank{font-size:2rem;font-weight:900;color:var(--stamp-red)}
+.game-header .turn-info{font-size:1.3rem;color:#888}
 
 /* Opponents area */
 .opponents-area{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:8px 4px;flex-shrink:0;min-height:60px}
@@ -180,24 +206,34 @@ body,html{
     background:var(--stamp-red);color:#fff;font-size:.6rem;
     width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;
 }
-.opponent-name{font-size:.85rem;font-weight:bold;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.opponent-count{font-size:1.2rem;font-weight:900}
+.opponent-name{font-size:1.25rem;font-weight:bold;max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.opponent-count{font-size:1.9rem;font-weight:900}
 .opponent-card.disconnected{opacity:.4}
-.opponent-hand-vis{display:flex;gap:4px;align-items:center;margin-top:2px;flex-wrap:wrap;justify-content:center}
-.opp-deck{display:flex;align-items:center;gap:1px;font-size:.75rem;font-weight:900}
-.mini-card-back{width:16px;height:22px;border-radius:2px;border:1.5px solid;display:inline-block;position:relative;vertical-align:middle}
+.opponent-hand-vis{display:flex;gap:5px;align-items:center;margin-top:2px;flex-wrap:wrap;justify-content:center}
+.opp-deck{display:flex;align-items:center;gap:2px;font-size:1.6rem;font-weight:900}
+.mini-card-back{width:18px;height:24px;border-radius:2px;border:1.5px solid;display:inline-block;position:relative;vertical-align:middle}
 .mini-card-back[data-deck="0"]{background:var(--deck-0-color);border-color:var(--deck-0-ink)}
 .mini-card-back[data-deck="1"]{background:var(--deck-1-color);border-color:var(--deck-1-ink)}
 .mini-card-back[data-deck="2"]{background:var(--deck-2-color);border-color:var(--deck-2-ink)}
 .mini-card-back::after{content:'?';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:9px;font-weight:900}
 
 /* Table area */
-.table-area{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;min-height:120px;overflow:hidden}
-.card-pool{width:220px;min-height:110px;padding:10px;background:rgba(255,255,255,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
-.pool-cards-row{display:flex;justify-content:center;min-height:55px;position:relative;width:100%}
-.pool-card{position:absolute;top:0}
-.pool-count{font-weight:900;font-size:1.1rem;margin-top:8px;text-align:center}
-.pool-last-play{font-size:.85rem;color:#888;text-align:center}
+.table-area{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;min-height:130px;overflow:hidden}
+.card-pool{
+    width:250px;min-height:130px;padding:14px;position:relative;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    /* Hand-drawn wood texture */
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='130'%3E%3Cdefs%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03 0.15' numOctaves='3' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3Cline x1='0' y1='18' x2='250' y2='20' stroke='%23000' stroke-width='.4' opacity='.06'/%3E%3Cline x1='0' y1='45' x2='250' y2='43' stroke='%23000' stroke-width='.5' opacity='.05'/%3E%3Cline x1='0' y1='72' x2='250' y2='75' stroke='%23000' stroke-width='.3' opacity='.07'/%3E%3Cline x1='0' y1='100' x2='250' y2='97' stroke='%23000' stroke-width='.4' opacity='.05'/%3E%3C/svg%3E") center/cover,
+        linear-gradient(148deg, #C9A870 0%, #BF9B5E 20%, #A6804E 45%, #B89060 70%, #C4A265 100%);
+    border:3px solid #7A5A10;
+    border-radius:255px 12px 225px 12px/12px 225px 12px 255px;
+    box-shadow:inset 0 2px 6px rgba(0,0,0,.2), 3px 3px 0 rgba(0,0,0,.12);
+}
+.pool-cards-row{position:relative;width:100%;min-height:70px}
+.pool-card{position:absolute}
+.pool-count{font-weight:900;font-size:1.4rem;margin-top:8px;text-align:center;color:#3A2800;text-shadow:0 1px 0 rgba(255,255,255,.3)}
+.pool-last-play{font-size:1rem;color:#5C4020;text-align:center;text-shadow:0 1px 0 rgba(255,255,255,.2)}
 
 /* Action area */
 .action-area{display:flex;justify-content:space-around;align-items:center;padding:8px 4px;gap:6px;flex-shrink:0;min-height:54px;flex-wrap:wrap}
@@ -221,6 +257,12 @@ body,html{
 .hand-area::-webkit-scrollbar{display:none}
 .hand-area .card{margin-left:var(--card-ml,3px)}
 .hand-area .card:first-child{margin-left:0}
+/* Enlarged hand card text */
+.hand-area .card{width:56px;height:80px}
+.hand-area .card .card-rank{font-size:22px;top:3px;left:5px}
+.hand-area .card .card-suit{font-size:16px;top:24px;left:5px}
+.hand-area .card .card-corner{font-size:10px;bottom:3px;right:3px}
+.hand-area .card.card-joker .card-rank{font-size:17px}
 
 /* ═══════════════════════════════════════════════
    CARDS
@@ -228,7 +270,7 @@ body,html{
 .card{
     width:52px;height:74px;background:#fff;border:2px solid var(--ink-black);
     border-radius:4px 10px 3px 8px;display:flex;flex-direction:column;
-    font-size:14px;font-weight:900;
+    font-size:20px;font-weight:900;
     box-shadow:2px 2px 0 rgba(0,0,0,.08);position:relative;flex-shrink:0;
     cursor:pointer;transition:transform .15s,box-shadow .15s;overflow:hidden;
 }
@@ -285,7 +327,7 @@ body,html{
 .declare-hand-label{font-size:.8rem;color:#999;text-align:center;margin-bottom:6px}
 .declare-hand-scroll{
     display:flex;align-items:flex-end;overflow-x:auto;overflow-y:hidden;
-    -webkit-overflow-scrolling:touch;padding:4px 2px 6px;gap:2px;
+    -webkit-overflow-scrolling:touch;padding:4px 2px 6px;gap:-2px;
 }
 .declare-hand-scroll::-webkit-scrollbar{display:none}
 .declare-hand-scroll .card{transform:none!important;cursor:default;flex-shrink:0}
@@ -412,7 +454,7 @@ body,html{
 <!-- ═══════════ SCREEN: HOME ═══════════ -->
 <div id="screen-home" class="screen active">
     <button class="rules-btn" onclick="app.showRules()" title="游戏规则">?</button>
-    <div class="home-card-deco">🃏</div>
+    <div class="home-card-deco wobble" id="home-joker">🃏<span class="home-liar-stamp" id="home-liar-stamp">LIAR!</span></div>
     <div class="home-title">骗子博弈</div>
     <div class="home-subtitle">Liar's Gambit</div>
     <input type="text" id="input-name" class="input-sketch" placeholder="你叫什么名字?" maxlength="8" autocomplete="off">
@@ -492,13 +534,13 @@ body,html{
 <!-- ═══════════ SCREEN: GAME ═══════════ -->
 <div id="screen-game" class="screen">
     <div class="game-top-bar">
-        <span class="bar-flavor">"谁是骗子？也许每个人都是。"</span>
+        <span class="bar-flavor">"谁是骗子？"</span>
         <button class="bar-rules-btn" onclick="app.showRules()">📖 规则</button>
     </div>
     <div class="game-header">
         <div>目标: <span class="declared-rank" id="game-declared-rank">-</span></div>
         <div class="turn-info" id="game-turn-info">等待中</div>
-        <div style="font-size:.8rem;color:#aaa;" id="game-room-tag"></div>
+        <div style="font-size:.9rem;color:#aaa;" id="game-room-tag"></div>
     </div>
     <div class="opponents-area" id="opponents-area"></div>
     <div class="table-area">
@@ -683,12 +725,12 @@ const FLAVOR_TEXTS=[
     '"真话是最高级的欺骗。"',
     '"信任，是用来背叛的。"',
     '"每张牌都可能是谎言。"',
-    '"诚实？那不是这桌的规矩。"',
+    '"诚实？这是我的信仰。"',
     '"你的眼神出卖了你的手牌。"',
     '"高明的骗子从不说谎。"',
     '"牌面之下，众生皆骗。"',
     '"质疑一切，包括你自己。"',
-    '"在这里，真相反而可疑。"',
+    '"用真诚打破质疑。"',
 ];
 function _randomFlavor(){
     const el=document.querySelector('.bar-flavor');
@@ -1299,8 +1341,22 @@ class App {
         return n;
     }
 
+    _slamHomeStamp(){
+        const joker=$('home-joker'), stamp=$('home-liar-stamp');
+        if(joker) joker.classList.remove('wobble');
+        if(stamp){stamp.classList.remove('slam');void stamp.offsetWidth;stamp.classList.add('slam');}
+        if(navigator.vibrate) navigator.vibrate(50);
+    }
+
+    _resetHomeStamp(){
+        const joker=$('home-joker'), stamp=$('home-liar-stamp');
+        if(joker) joker.classList.add('wobble');
+        if(stamp) stamp.classList.remove('slam');
+    }
+
     async _create(){
         const name=this._getName();
+        this._slamHomeStamp();
         try{
             $('btn-create').disabled=true; $('btn-create').textContent='创建中...';
             this.net=new NetworkManager();
@@ -1323,6 +1379,7 @@ class App {
         const name=this._getName();
         const code=$('input-room-code').value.trim().toUpperCase();
         if(code.length<2){showToast('请输入房间号');return;}
+        this._slamHomeStamp();
         try{
             $('btn-join').disabled=true; $('btn-join').textContent='...';
             this.net=new NetworkManager();
@@ -1361,6 +1418,7 @@ class App {
 
     async _autoJoin(code){
         const name=this._getName();
+        this._slamHomeStamp();
         showToast('正在自动加入房间 '+code+'...');
         try{
             $('btn-join').disabled=true; $('btn-join').textContent='加入中...';
@@ -1497,20 +1555,21 @@ class App {
     _renderTable(s){
         const row=$('pool-cards-row');
         const ct=s.tableCardCount;
-        let h=''; const mx=Math.min(ct,10);
+        const rw=row.clientWidth||220, rh=row.clientHeight||70;
+        let h=''; const mx=Math.min(ct,20);
         for(let i=0;i<mx;i++){
-            const rot=(i*7-mx*3)+rng(-2,2);
-            const left=50+(i-mx/2)*12;
-            // Determine which deck this card came from via play log
+            const rot=rng(-30,30);
+            const cx=rng(2, Math.max(rw-44, 50));
+            const cy=rng(0, Math.max(rh-58, 10));
             let dk=0, accum=0;
             for(const entry of (s.tablePlayLog||[])){
                 if(i<accum+entry.count){break;}
                 accum+=entry.count; dk=(dk+1)%3;
             }
-            h+=`<div class="card card-sm face-down pool-card" data-deck="${dk%(this.selectedDeckCount||1)}" style="transform:rotate(${rot}deg);left:${left}px;"></div>`;
+            h+=`<div class="card card-sm face-down pool-card" data-deck="${dk%(this.selectedDeckCount||1)}" style="transform:rotate(${rot}deg);left:${cx}px;top:${cy}px;"></div>`;
         }
         row.innerHTML=h;
-        $('pool-count').textContent=ct>0?`牌池: ${ct} 张牌`:'牌池空';
+        $('pool-count').textContent=ct>0?`牌池: ${ct} 张`:'- 空 -';
         if(s.lastPlayerId&&s.lastPlayCount>0){
             const lp=s.players.find(p=>p.id===s.lastPlayerId);
             $('pool-last-play').textContent=`${lp?.name||'?'} 出了 ${s.lastPlayCount} 张`;
@@ -1698,6 +1757,7 @@ class App {
         $('modal-rules').classList.remove('active');
         $('game-log').innerHTML='';
         showScreen('home');
+        this._resetHomeStamp();
     }
 
     showRules(){

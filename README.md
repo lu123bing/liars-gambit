@@ -19,21 +19,14 @@
 
 双击 `index.html`  打开（部分浏览器可能限制 WebRTC 连接）。
 
-### 方式二：本地静态服务器（推荐）
+### 方式二：网页链接（推荐）
 
-```bash
-# 任选一种
-python3 -m http.server 8080
-# 或
-npx serve .
-```
-
-然后访问：`http://localhost:8080/index.html`
+访问：[`https://lu123bing.github.io/liars-gambit/`](https://lu123bing.github.io/liars-gambit/)
 
 ## 目录结构
 
-- `index.html` / `huangdan.html`：单文件完整版（HTML/CSS/JS）
-- `index2.html`：备份/实验版本（如存在）
+- `index.html` ：单文件完整版（HTML/CSS/JS）
+<!-- - `index2.html`：备份/实验版本（如存在） -->
 
 ## 开始游戏
 
