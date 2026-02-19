@@ -233,12 +233,17 @@ body,html{
 }
 .pool-cards-row{position:relative;width:100%;height:68px;flex-shrink:0}
 .pool-card{position:absolute}
-.pool-count{font-weight:900;font-size:1.4rem;text-align:center;color:#3A2800;text-shadow:0 1px 0 rgba(255,255,255,.3);line-height:1.1}
-.pool-last-play{font-size:1rem;color:#5C4020;text-align:center;text-shadow:0 1px 0 rgba(255,255,255,.2)}
+.pool-count{font-weight:900;font-size:1.4rem;text-align:center;color:#3A2800;text-shadow:0 1px 0 rgba(255,255,255,.3);line-height:1.1;position:relative;z-index:2}
+.pool-last-play{font-size:1rem;color:#5C4020;text-align:center;text-shadow:0 1px 0 rgba(255,255,255,.2);position:relative;z-index:2}
+
+/* Opponent action shake */
+@keyframes opp-shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-4px) rotate(-1deg)}30%{transform:translateX(3px) rotate(1deg)}45%{transform:translateX(-3px)}60%{transform:translateX(2px)}75%{transform:translateX(-1px)}}
+.opponent-card.opp-acted{animation:opp-shake .4s ease}
 
 /* Action area */
 .action-area{display:flex;justify-content:space-around;align-items:center;padding:8px 4px;gap:6px;flex-shrink:0;min-height:54px;flex-wrap:wrap}
 .action-area .doodle-btn{flex:1;min-width:0;padding:10px 8px;font-size:1rem;text-align:center}
+.sel-count{font-size:.85rem;color:var(--stamp-red);font-weight:900;min-width:2em;text-align:center;white-space:nowrap}
 
 /* Hand area */
 .hand-area{
@@ -563,6 +568,7 @@ body,html{
     </div>
     <div class="action-area" id="action-area">
         <button class="doodle-btn" id="btn-play" disabled>出牌</button>
+        <span class="sel-count" id="sel-count"></span>
         <button class="doodle-btn" id="btn-pass" disabled>过</button>
         <button class="doodle-btn btn-red" id="btn-challenge" disabled>质疑!</button>
     </div>
@@ -1620,6 +1626,8 @@ class App {
         this._renderTable(s);
         this._renderActions(s);
         this._updateFFA(s);
+        // Detect opponent action → shake their frame
+        this._detectOpponentAction(s);
     }
 
     _renderOpponents(s){
@@ -1635,7 +1643,7 @@ class App {
                 if(dcs[d]>0) handVis+=`<span class="opp-deck"><span class="mini-card-back" data-deck="${d}"></span>\u00d7${dcs[d]}</span>`;
             }
             if(!handVis) handVis='<span style="font-size:.8rem;color:#aaa;">0</span>';
-            h+=`<div class="opponent-card ${isTurn?'is-turn':''} ${isD?'is-dealer':''} ${!p.connected?'disconnected':''}">
+            h+=`<div class="opponent-card ${isTurn?'is-turn':''} ${isD?'is-dealer':''} ${!p.connected?'disconnected':''}" data-pid="${p.id}">
                 <div class="opponent-name">${p.name}</div><div class="opponent-hand-vis">${handVis}</div></div>`;
         }
         $('opponents-area').innerHTML=h;
@@ -1645,11 +1653,12 @@ class App {
         const row=$('pool-cards-row');
         const ct=s.tableCardCount;
         const pw=210, ph=60; // usable area inside pool
+        const cw=40, ch=56; // card-sm dimensions
         let h=''; const mx=Math.min(ct,24);
         for(let i=0;i<mx;i++){
             const rot=rng(-30,30);
-            const cx=rng(0, pw-40);
-            const cy=rng(0, ph-50);
+            const cx=Math.max(0, Math.min(rng(0, pw), pw-cw));
+            const cy=Math.max(0, Math.min(rng(0, ph), ph-ch));
             let dk=0, accum=0;
             for(const entry of (s.tablePlayLog||[])){
                 if(i<accum+entry.count){break;}
@@ -1663,6 +1672,25 @@ class App {
             const lp=s.players.find(p=>p.id===s.lastPlayerId);
             $('pool-last-play').textContent=`${lp?.name||'?'} 出了 ${s.lastPlayCount} 张`;
         }else $('pool-last-play').textContent='';
+    }
+
+    // Detect when an opponent plays cards or triggers a challenge → shake their frame
+    _detectOpponentAction(s){
+        const prevSeq=this._prevSeq||0;
+        const prevLastPlayer=this._prevLastPlayerId||null;
+        this._prevSeq=s.seq; this._prevLastPlayerId=s.lastPlayerId;
+        if(s.seq<=prevSeq)return;
+        // Someone acted — figure out who
+        let actorId=null;
+        if(s.lastPlayerId && s.lastPlayerId!==prevLastPlayer) actorId=s.lastPlayerId;
+        else if(s.phase==='RESOLVING') actorId=s.players[s.currentPlayerIndex]?.id; // challenger
+        if(!actorId||actorId===this.game.myPlayerId)return;
+        const el=document.querySelector(`.opponent-card[data-pid="${actorId}"]`);
+        if(!el)return;
+        el.classList.remove('opp-acted');
+        void el.offsetWidth; // reflow
+        el.classList.add('opp-acted');
+        el.addEventListener('animationend',()=>el.classList.remove('opp-acted'),{once:true});
     }
 
     _renderActions(s){
@@ -1721,7 +1749,11 @@ class App {
         this._updatePlayBtn();
     }
 
-    _updatePlayBtn(){$('btn-play').disabled=!(this.game?.isMyTurn()&&this.selectedCards.size>0);}
+    _updatePlayBtn(){
+        $('btn-play').disabled=!(this.game?.isMyTurn()&&this.selectedCards.size>0);
+        const n=this.selectedCards.size;
+        $('sel-count').textContent=n>0?`×${n}`:'';
+    }
 
     _playCards(){
         if(!this.selectedCards.size)return;
