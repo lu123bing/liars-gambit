@@ -218,10 +218,11 @@ body,html{
 .mini-card-back::after{content:'?';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:9px;font-weight:900}
 
 /* Table area */
-.table-area{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;min-height:130px;overflow:hidden}
+.table-area{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;height:160px;max-height:160px;overflow:hidden}
 .card-pool{
-    width:250px;min-height:130px;padding:14px;position:relative;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    width:240px;height:130px;max-height:130px;padding:10px;position:relative;
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+    overflow:hidden;
     /* Hand-drawn wood texture */
     background:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='130'%3E%3Cdefs%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03 0.15' numOctaves='3' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3Cline x1='0' y1='18' x2='250' y2='20' stroke='%23000' stroke-width='.4' opacity='.06'/%3E%3Cline x1='0' y1='45' x2='250' y2='43' stroke='%23000' stroke-width='.5' opacity='.05'/%3E%3Cline x1='0' y1='72' x2='250' y2='75' stroke='%23000' stroke-width='.3' opacity='.07'/%3E%3Cline x1='0' y1='100' x2='250' y2='97' stroke='%23000' stroke-width='.4' opacity='.05'/%3E%3C/svg%3E") center/cover,
@@ -230,9 +231,9 @@ body,html{
     border-radius:255px 12px 225px 12px/12px 225px 12px 255px;
     box-shadow:inset 0 2px 6px rgba(0,0,0,.2), 3px 3px 0 rgba(0,0,0,.12);
 }
-.pool-cards-row{position:relative;width:100%;min-height:70px}
+.pool-cards-row{position:relative;width:100%;height:68px;flex-shrink:0}
 .pool-card{position:absolute}
-.pool-count{font-weight:900;font-size:1.4rem;margin-top:8px;text-align:center;color:#3A2800;text-shadow:0 1px 0 rgba(255,255,255,.3)}
+.pool-count{font-weight:900;font-size:1.4rem;text-align:center;color:#3A2800;text-shadow:0 1px 0 rgba(255,255,255,.3);line-height:1.1}
 .pool-last-play{font-size:1rem;color:#5C4020;text-align:center;text-shadow:0 1px 0 rgba(255,255,255,.2)}
 
 /* Action area */
@@ -374,12 +375,21 @@ body,html{
 .stamp-text.animate{animation:stamp-slam .3s forwards}
 .stamp-text.honest{color:#2E7D32;border-color:#2E7D32}
 
-#overlay-challenge{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:90;background:rgba(0,0,0,.5);justify-content:center;align-items:center;flex-direction:column;gap:16px;padding:20px}
+#overlay-challenge{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:90;background:rgba(0,0,0,.5);justify-content:center;align-items:center;flex-direction:column;gap:16px;padding:20px;cursor:pointer}
 #overlay-challenge.active{display:flex}
-.challenge-result-box{background:var(--paper-bg);padding:20px;text-align:center;max-width:320px;width:100%;box-shadow:6px 6px 0 rgba(0,0,0,.15)}
+.challenge-result-box{background:var(--paper-bg);padding:20px;text-align:center;max-width:320px;width:100%;box-shadow:6px 6px 0 rgba(0,0,0,.15);cursor:default}
 .challenge-result-box h2{font-size:1.5rem;margin-bottom:8px}
 .challenge-result-box .result-detail{font-size:1rem;margin-bottom:12px;color:#666}
+.challenge-dismiss-hint{color:rgba(255,255,255,.6);font-size:.8rem;margin-top:8px;text-align:center}
 .reveal-cards{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;max-width:300px;margin:0 auto}
+
+/* Disconnect pause overlay */
+#overlay-dc-pause{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:150;background:rgba(244,236,216,.92);justify-content:center;align-items:center;flex-direction:column;gap:14px;padding:20px}
+#overlay-dc-pause.active{display:flex}
+.dc-pause-icon{font-size:3rem}
+.dc-pause-text{font-size:1.2rem;font-weight:bold;text-align:center;color:var(--text-brown)}
+.dc-pause-sub{font-size:.9rem;color:#888;text-align:center}
+.dc-pause-btn{margin-top:8px}
 
 #overlay-reconnect{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:200;background:rgba(244,236,216,.95);justify-content:center;align-items:center;flex-direction:column;gap:16px}
 #overlay-reconnect.active{display:flex}
@@ -528,6 +538,7 @@ body,html{
     <div class="lobby-footer">
         <button class="doodle-btn btn-blue btn-wide" id="btn-start" disabled>▶ 开始游戏!</button>
         <div class="lobby-hint" id="lobby-status">等待更多玩家加入...</div>
+        <div style="text-align:center;font-size:.75rem;color:#b0a080;margin-top:6px;">⚠️ 请勿熄屏或切后台，否则可能断联</div>
     </div>
 </div>
 
@@ -587,8 +598,8 @@ body,html{
 </div>
 
 <!-- ═══════════ OVERLAY: CHALLENGE RESULT ═══════════ -->
-<div id="overlay-challenge">
-    <div class="challenge-result-box sketch-border">
+<div id="overlay-challenge" onclick="app.dismissChallenge(event)">
+    <div class="challenge-result-box sketch-border" onclick="event.stopPropagation()">
         <h2 id="challenge-title">质疑结果</h2>
         <div class="result-detail" id="challenge-detail"></div>
         <div class="reveal-cards" id="challenge-reveal-cards"></div>
@@ -597,6 +608,7 @@ body,html{
             <div id="challenge-penalty" style="font-size:.9rem;color:#888;margin-top:4px;"></div>
         </div>
     </div>
+    <div class="challenge-dismiss-hint">点击空白处关闭</div>
 </div>
 
 <!-- ═══════════ OVERLAY: LIAR STAMP ═══════════ -->
@@ -606,6 +618,15 @@ body,html{
 <div id="overlay-reconnect">
     <div class="spinner"></div>
     <div class="reconnect-text" id="reconnect-text">正在重新连接...</div>
+</div>
+
+<!-- ═══════════ OVERLAY: DISCONNECT PAUSE ═══════════ -->
+<div id="overlay-dc-pause">
+    <div class="dc-pause-icon">⚠️</div>
+    <div class="dc-pause-text" id="dc-pause-text">玩家断联了</div>
+    <div class="dc-pause-sub" id="dc-pause-sub">等待重连中...</div>
+    <div class="spinner"></div>
+    <button class="doodle-btn btn-red dc-pause-btn" id="btn-dc-continue" style="display:none" onclick="app.dismissDcPause()">跳过等待，继续游戏</button>
 </div>
 
 <!-- TOAST -->
@@ -666,6 +687,7 @@ body,html{
         </ul>
 
         <button class="doodle-btn btn-blue rules-close-btn" onclick="document.getElementById('modal-rules').classList.remove('active')">我懂了！</button>
+        <div style="text-align:center;font-size:.75rem;color:#b0a080;margin-top:8px;">⚠️ 游戏过程中请勿熄屏或切后台</div>
     </div>
 </div>
 
@@ -694,6 +716,28 @@ const DECK_COLORS = [
     { primary:'#4A7C96', symbol:'◆' },
     { primary:'#6B7F4E', symbol:'▲' },
 ];
+
+// ═══════════════════════════════════════
+// SCREEN WAKE LOCK
+// ═══════════════════════════════════════
+let _wakeLock = null;
+async function requestWakeLock(){
+    try{
+        if('wakeLock' in navigator){
+            _wakeLock = await navigator.wakeLock.request('screen');
+            _wakeLock.addEventListener('release',()=>{_wakeLock=null;});
+        }
+    }catch(e){/* silently fail */}
+}
+function releaseWakeLock(){
+    if(_wakeLock){_wakeLock.release().catch(()=>{});_wakeLock=null;}
+}
+// Re-acquire on visibility change (mobile browsers release on tab switch)
+document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible' && _wakeLock===null) requestWakeLock();
+});
+// Request immediately
+requestWakeLock();
 
 // ═══════════════════════════════════════
 // UTILITIES
@@ -950,6 +994,7 @@ class GameEngine {
         });
         n.on('START_GAME',()=>{if(n.isHost)this._startGame();});
         n.on('PLAY_AGAIN',()=>{if(n.isHost)this._startGame();});
+        n.on('SKIP_DC_WAIT',()=>{if(n.isHost)this.hostContinueDc();});
 
         // CLIENT receives
         n.on('WELCOME',d=>{this.myPlayerId=d.playerId;localStorage.setItem('lg_playerId',d.playerId);});
@@ -960,6 +1005,9 @@ class GameEngine {
         n.on('LOG',d=>{if(this.onLog)this.onLog(d.message,d.important,d.isPlayInfo);});
         n.on('LOG_CLEAR',()=>{if(this.onLogClear)this.onLogClear();});
         n.on('REQUEST_DECLARE',()=>{if(this.onRequestDeclare)this.onRequestDeclare();});
+        n.on('PLAYER_DC',d=>{if(this.onPlayerDC)this.onPlayerDC(d);});
+        n.on('PLAYER_RC',d=>{if(this.onPlayerRC)this.onPlayerRC(d);});
+        n.on('DC_CONTINUE',()=>{if(this.onDCContinue)this.onDCContinue();});
     }
 
     // ─── HOST: Init lobby ───
@@ -1000,12 +1048,20 @@ class GameEngine {
 
     // ─── HOST: Rejoin ───
     _onRejoin(d,from){
-        const p=this._pById(d.playerId);
+        // Try match by ID first, then by name
+        let p=this._pById(d.playerId);
+        if(!p && d.name){
+            p=this.fullState.players.find(pp=>!pp.connected && pp.name===d.name);
+        }
         if(!p){this._onJoin({playerId:d.playerId,name:d.name||'???'},from);return;}
         p.connected=true;p.peerId=from;
+        // Update playerId if it changed (new browser session)
+        if(p.id!==d.playerId){p.id=d.playerId;}
         this.net.send(from,{type:'WELCOME',playerId:p.id});
         this.net.send(from,{type:'HAND_UPDATE',hand:p.hand});
         this._log(`${p.name} 重新连接了`);
+        // Notify all: player reconnected
+        this.net.broadcastAndSelf({type:'PLAYER_RC',playerName:p.name});
         this._broadcastState();
     }
 
@@ -1262,22 +1318,52 @@ class GameEngine {
         const p=this._pByPeer(peerId); if(!p)return;
         p.connected=false;
         this._log(`${p.name} 断线了`);
-        const cur=this.fullState.players[this.fullState.currentPlayerIndex];
-        if(cur&&cur.id===p.id){
-            if(this.fullState.phase==='TURN'){
-                this.fullState.passCount++;
-                const active=this.fullState.players.filter(p=>p.connected);
-                if(this.fullState.lastPlayerId&&this.fullState.passCount>=active.length){
+
+        // In LOBBY phase, just update state
+        if(this.fullState.phase==='LOBBY'){
+            this._broadcastState(); return;
+        }
+
+        // Notify all players about disconnect (triggers pause overlay)
+        this.net.broadcastAndSelf({type:'PLAYER_DC',playerName:p.name,playerId:p.id});
+        this._broadcastState();
+
+        // Set a timer — auto-continue after 30s if player doesn't reconnect
+        if(this._dcTimer)clearTimeout(this._dcTimer);
+        this._dcTimer=setTimeout(()=>this._forceResumeDc(p),30000);
+    }
+
+    // HOST: Force resume after disconnect (called by timer or host button)
+    _forceResumeDc(dcPlayer){
+        if(this._dcTimer){clearTimeout(this._dcTimer);this._dcTimer=null;}
+        if(!this.fullState||!dcPlayer)return;
+        const fs=this.fullState;
+        const cur=fs.players[fs.currentPlayerIndex];
+        if(cur&&cur.id===dcPlayer.id&&!cur.connected){
+            if(fs.phase==='TURN'){
+                fs.passCount++;
+                const active=fs.players.filter(p=>p.connected);
+                if(fs.lastPlayerId&&fs.passCount>=active.length){
                     this._roundEnd();
                 } else {this._advanceTurn();this._broadcastState();}
-            } else if(this.fullState.phase==='DECLARING'){
+            } else if(fs.phase==='DECLARING'){
                 const r=RANKS[rng(0,RANKS.length-1)];
-                this.fullState.declaredRank=r; this.fullState.challengeMode='sequential';
-                this.fullState.phase='TURN'; this.fullState.seq++;
-                this._log(`${p.name} 断线，自动宣言: ${r}`);
+                fs.declaredRank=r;
+                fs.phase='TURN'; fs.seq++;
+                this._log(`${dcPlayer.name} 断线，自动宣言: ${r}`);
                 this._advanceTurn(); this._broadcastState();
-            } else {this._broadcastState();}
-        } else {this._broadcastState();}
+            }
+        }
+        // Dismiss pause overlay for everyone
+        this.net.broadcastAndSelf({type:'DC_CONTINUE'});
+    }
+
+    // HOST: Called when host clicks "continue" button
+    hostContinueDc(){
+        if(!this.fullState)return;
+        // Find the disconnected player who caused the pause
+        const dc=this.fullState.players.find(p=>!p.connected);
+        this._forceResumeDc(dc);
     }
 
     // ─── LOCAL state persistence ───
@@ -1492,6 +1578,9 @@ class App {
         this.game.onLog=(m,i,p)=>this._addLog(m,i,p);
         this.game.onLogClear=()=>{$('game-log').innerHTML='';};
         this.game.onRequestDeclare=()=>this._showDeclareModal();
+        this.game.onPlayerDC=d=>this._showDcPause(d);
+        this.game.onPlayerRC=d=>this._hideDcPause(d);
+        this.game.onDCContinue=()=>this._hideDcPause();
         this.net.onPeerConnect=(pid)=>{};
         this.net.onPeerDisconnect=(pid)=>{
             if(this.net.isHost&&this.game)this.game.handleDisconnect(pid);
@@ -1555,12 +1644,12 @@ class App {
     _renderTable(s){
         const row=$('pool-cards-row');
         const ct=s.tableCardCount;
-        const rw=row.clientWidth||220, rh=row.clientHeight||70;
-        let h=''; const mx=Math.min(ct,20);
+        const pw=210, ph=60; // usable area inside pool
+        let h=''; const mx=Math.min(ct,24);
         for(let i=0;i<mx;i++){
             const rot=rng(-30,30);
-            const cx=rng(2, Math.max(rw-44, 50));
-            const cy=rng(0, Math.max(rh-58, 10));
+            const cx=rng(0, pw-40);
+            const cy=rng(0, ph-50);
             let dk=0, accum=0;
             for(const entry of (s.tablePlayLog||[])){
                 if(i<accum+entry.count){break;}
@@ -1732,7 +1821,34 @@ class App {
         $('challenge-verdict').style.color=d.isLiar?'#2E7D32':'var(--stamp-red)';
         $('challenge-penalty').textContent=`${d.loserName} 收走 ${d.totalCards||'所有'} 张牌`;
         $('overlay-challenge').classList.add('active');
-        setTimeout(()=>$('overlay-challenge').classList.remove('active'),3500);
+        this._chDismissTimer=setTimeout(()=>$('overlay-challenge').classList.remove('active'),6000);
+    }
+
+    dismissChallenge(e){
+        // Click outside the box dismisses
+        if(this._chDismissTimer)clearTimeout(this._chDismissTimer);
+        $('overlay-challenge').classList.remove('active');
+    }
+
+    // ─── Disconnect pause overlay ───
+    _showDcPause(d){
+        const ol=$('overlay-dc-pause');
+        ol.querySelector('.dc-pause-text').textContent=`玩家 ${d.playerName} 断线了，等待重连中…`;
+        const btn=ol.querySelector('.dc-pause-btn');
+        btn.style.display=this.net&&this.net.isHost?'inline-block':'none';
+        ol.classList.add('active');
+    }
+    _hideDcPause(d){
+        $('overlay-dc-pause').classList.remove('active');
+    }
+    dismissDcPause(){
+        // Host clicks "skip waiting" → tell engine to force continue
+        if(this.game && this.net && this.net.isHost){
+            this.game.hostContinueDc();
+        } else if(this.game){
+            this.game.net.sendToHost({type:'SKIP_DC_WAIT'});
+        }
+        $('overlay-dc-pause').classList.remove('active');
     }
 
     // ─── Game over ───
@@ -1753,6 +1869,7 @@ class App {
         $('overlay-challenge').classList.remove('active');
         $('overlay-liar').classList.remove('active');
         $('overlay-reconnect').classList.remove('active');
+        $('overlay-dc-pause').classList.remove('active');
         $('modal-declare').classList.remove('active');
         $('modal-rules').classList.remove('active');
         $('game-log').innerHTML='';
