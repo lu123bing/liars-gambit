@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>骗子博弈 - Liar's Gambit</title>
-    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=ZCOOL+KuaiLe&family=Pangolin&display=swap" rel="stylesheet">
     <style>
 /* ═══════════════════════════════════════════════
    CSS VARIABLES
    ═══════════════════════════════════════════════ */
 :root {
-    --paper-bg: #F4ECD8;
+    --paper-bg: #E8DAB2;
     --ink-black: #2C2C2C;
     --stamp-red: #D32F2F;
     --marker-blue: #2196F3;
@@ -35,7 +35,8 @@
 body,html{
     height:100%;width:100%;
     background-color:var(--paper-bg);
-    background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    background-image:radial-gradient(#d1bfae 1px, transparent 1px), url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    background-size:20px 20px, auto;
     font-family:'Patrick Hand','Comic Sans MS','Marker Felt',cursive;
     color:var(--text-brown);overflow:hidden;touch-action:manipulation;
 }
@@ -57,8 +58,8 @@ body,html{
    HOME SCREEN
    ═══════════════════════════════════════════════ */
 #screen-home{justify-content:center;align-items:center;gap:20px;text-align:center}
-.home-title{font-size:2.8rem;font-weight:900;transform:rotate(-2deg);line-height:1.1;text-shadow:3px 3px 0 rgba(0,0,0,.08)}
-.home-subtitle{font-size:1.3rem;color:var(--stamp-red);transform:rotate(1deg);margin-top:-8px}
+.home-title{font-family:'ZCOOL KuaiLe',cursive;font-size:3.5rem;font-weight:900;transform:rotate(-2deg);line-height:1.1;text-shadow:3px 3px 0px #fff, 5px 5px 0px var(--ink-black);letter-spacing:2px}
+.home-subtitle{font-family:'Pangolin',cursive;font-size:1.5rem;color:var(--stamp-red);transform:rotate(1deg);margin-top:-8px}
 .home-card-deco{
     font-size:6rem;transform:rotate(-8deg);filter:drop-shadow(2px 2px 0 rgba(0,0,0,.1));
     position:relative;display:inline-block;
@@ -107,16 +108,18 @@ body,html{
     color:var(--text-brown);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
     cursor:pointer;transition:all .1s;position:relative;white-space:nowrap;
     transform:rotate(-0.5deg);
+    box-shadow:6px 6px 0px var(--ink-black);
 }
 .doodle-btn:nth-child(odd){transform:rotate(-1deg)}
 .doodle-btn:nth-child(even){transform:rotate(1deg)}
 .doodle-btn:nth-child(3n){transform:rotate(0.5deg)}
-.doodle-btn:active{transform:scale(.95) rotate(0deg)!important;background:#eee}
-.doodle-btn:disabled{opacity:.4;transform:none!important}
+.doodle-btn:hover{transform:translate(-2px,-2px) rotate(-0.5deg);box-shadow:8px 8px 0px var(--ink-black)}
+.doodle-btn:active{transform:translate(4px,4px) scale(.95) rotate(0deg)!important;box-shadow:2px 2px 0px var(--ink-black);background:#eee}
+.doodle-btn:disabled{opacity:.4;transform:none!important;box-shadow:none}
 .doodle-btn.btn-wide{width:100%}
 .doodle-btn.btn-red{background:#ffecf0;color:var(--stamp-red);border-color:var(--stamp-red)}
-.doodle-btn.btn-blue{background:#e8f4fd;color:var(--marker-blue);border-color:var(--marker-blue)}
-.doodle-btn.btn-green{background:#ecf5ec;color:#4a7a47;border-color:#4a7a47}
+.doodle-btn.btn-blue{background-color:#87CEEB;color:var(--text-brown);border-color:var(--ink-black)}
+.doodle-btn.btn-green{background-color:#D4E6B5;color:var(--text-brown);border-color:var(--ink-black)}
 .doodle-btn.btn-sm{padding:8px 16px;font-size:.95rem}
 
 /* ═══════════════════════════════════════════════
@@ -258,18 +261,22 @@ body,html{
 .card-pool{
     width:240px;height:130px;max-height:130px;padding:10px;position:relative;
     display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
-    overflow:hidden;
+    overflow:visible;
     /* Sketchy pool area */
-    background:rgba(0,0,0,.03);
+    background:
+        linear-gradient(165deg, rgba(255,255,255,.2), rgba(255,255,255,0) 46%),
+        repeating-linear-gradient(-14deg, #d8b892 0 24px, #cfac84 24px 45px, #d2b088 45px 65px),
+        repeating-linear-gradient(58deg, rgba(112,76,42,.09) 0 1.5px, transparent 1.5px 10px),
+        #d6b48d;
     border:4px dashed var(--ink-black);
     border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
-    box-shadow:inset 0 0 20px rgba(0,0,0,.05);
+    box-shadow:inset 0 0 20px rgba(88,55,28,.12), inset 0 0 0 1px rgba(255,255,255,.2);
     transform:rotate(-1deg);
 }
 .pool-cards-row{position:relative;width:100%;height:68px;flex-shrink:0}
 .pool-card{position:absolute}
 .pool-count{font-weight:900;font-size:1.4rem;text-align:center;color:#3A2800;text-shadow:0 1px 0 rgba(255,255,255,.3);line-height:1.1;position:relative;z-index:2}
-.pool-last-play{font-size:1rem;color:#5C4020;text-align:center;text-shadow:0 1px 0 rgba(255,255,255,.2);position:relative;z-index:2}
+.pool-last-play{font-size:1.2rem;color:#372714;text-align:center;text-shadow:0 1px 0 rgba(255,255,255,.2);position:relative;z-index:2}
 
 /* Opponent action shake */
 @keyframes opp-shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-4px) rotate(-1deg)}30%{transform:translateX(3px) rotate(1deg)}45%{transform:translateX(-3px)}60%{transform:translateX(2px)}75%{transform:translateX(-1px)}}
@@ -277,8 +284,8 @@ body,html{
 
 /* Action area */
 .action-area{display:flex;justify-content:space-around;align-items:center;padding:8px 4px;gap:6px;flex-shrink:0;min-height:54px;flex-wrap:wrap}
-.action-area .doodle-btn{flex:1;min-width:0;padding:10px 8px;font-size:1rem;text-align:center;box-shadow:3px 3px 0 rgba(0,0,0,.15);transition:transform .15s,box-shadow .15s}
-.action-area .doodle-btn:active{box-shadow:1px 1px 0 rgba(0, 0, 0, 0.976);transform:translateY(1px)}
+.action-area .doodle-btn{flex:1;min-width:0;padding:10px 8px;font-size:1rem;text-align:center;box-shadow:3px 3px 0 var(--ink-black);transition:transform .15s,box-shadow .15s}
+.action-area .doodle-btn:active{box-shadow:1px 1px 0 var(--ink-black);transform:translateY(1px)}
 @keyframes btn-wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-3deg)}40%{transform:rotate(2deg)}60%{transform:rotate(-1.5deg)}80%{transform:rotate(1deg)}}
 .action-area #btn-play.has-sel{animation:btn-wiggle .35s ease}
 .sel-count{font-size:.85rem;color:var(--stamp-red);font-weight:900;min-width:2em;text-align:center;white-space:nowrap}
@@ -291,15 +298,32 @@ body,html{
 }
 
 /* Game log — below hand area */
+.log-divider{
+    width:100%;height:13px;flex-shrink:0;position:relative;z-index:2;pointer-events:none;
+    background:
+        linear-gradient(45deg,#faf8ef 25%,transparent 25%) 0 0/14px 11px repeat-x,
+        linear-gradient(-45deg,#faf8ef 25%,transparent 25%) 7px 0/14px 11px repeat-x;
+}
+.log-divider::after{
+    content:'';position:absolute;top:10px;left:4px;right:4px;height:2px;
+    background:repeating-linear-gradient(90deg,
+        rgba(58,50,38,.62) 0 5px,
+        transparent 5px 9px,
+        rgba(58,50,38,.45) 9px 12px,
+        transparent 12px 18px,
+        rgba(58,50,38,.55) 18px 22px,
+        transparent 22px 28px
+    );
+    transform:rotate(-0.6deg);
+}
 .game-log{
     min-height:80px;max-height:120px;overflow-y:auto;width:100%;padding:10px 12px;flex-shrink:0;
-    background:#faf8ef;border-top:3px solid var(--ink-black);
+    background:#faf8ef;border-top:none;
     padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
     box-shadow:inset 0 4px 10px rgba(0,0,0,.05);
     /* Torn paper edge effect would be cool but keep it simpler: distinct section */
     position:relative;
 }
-.game-log::before{content:'';position:absolute;top:-4px;left:0;right:0;height:4px;background:repeating-linear-gradient(45deg,transparent,transparent 5px,#fff 5px,#fff 10px);z-index:2}
 .game-log .log-entry{
     font-size:.85rem;color:var(--text-brown);line-height:1.4;
     font-family:"Patrick Hand",cursive,sans-serif;
@@ -353,6 +377,30 @@ body,html{
 .card.face-down[data-deck="1"]::after{color:rgba(210,230,240,.4)}
 .card.face-down[data-deck="2"]{background:#5A6B42!important;border-color:var(--deck-2-ink)}
 .card.face-down[data-deck="2"]::after{color:rgba(220,235,210,.4)}
+
+/* Pool cards use the same hand-drawn deck fill as mini cards */
+.pool-card.face-down[data-deck="0"]{
+    background:
+        linear-gradient(140deg, rgba(255,255,255,.26) 0 16%, transparent 16% 38%, rgba(255,255,255,.14) 38% 60%, transparent 60% 100%),
+        linear-gradient(35deg, rgba(255,255,255,.08) 0 40%, rgba(0,0,0,.04) 40% 44%, transparent 44% 100%),
+        var(--deck-0-color)!important;
+    border-color:var(--deck-0-ink);
+}
+.pool-card.face-down[data-deck="1"]{
+    background:
+        linear-gradient(140deg, rgba(255,255,255,.26) 0 16%, transparent 16% 38%, rgba(255,255,255,.14) 38% 60%, transparent 60% 100%),
+        linear-gradient(35deg, rgba(255,255,255,.08) 0 40%, rgba(0,0,0,.04) 40% 44%, transparent 44% 100%),
+        var(--deck-1-color)!important;
+    border-color:var(--deck-1-ink);
+}
+.pool-card.face-down[data-deck="2"]{
+    background:
+        linear-gradient(140deg, rgba(255,255,255,.26) 0 16%, transparent 16% 38%, rgba(255,255,255,.14) 38% 60%, transparent 60% 100%),
+        linear-gradient(35deg, rgba(255,255,255,.08) 0 40%, rgba(0,0,0,.04) 40% 44%, transparent 44% 100%),
+        var(--deck-2-color)!important;
+    border-color:var(--deck-2-ink);
+}
+.pool-card.face-down::after{color:rgba(255,255,255,.42)}
 
 /* Selected card in hand */
 .card.selected{transform:translateY(-14px)!important;box-shadow:0 4px 12px rgba(0,0,0,.2);outline:3px solid var(--marker-blue);outline-offset:-1px}
@@ -626,9 +674,9 @@ body,html{
         <button class="doodle-btn" id="btn-play" disabled>出牌</button>
         <span class="sel-count" id="sel-count"></span>
         <button class="doodle-btn" id="btn-pass" disabled>过</button>
-        <button class="doodle-btn btn-red" id="btn-challenge" disabled>质疑!</button>
     </div>
     <div class="hand-area" id="hand-area"></div>
+    <div class="log-divider" aria-hidden="true"></div>
     <div class="game-log" id="game-log"></div>
 </div>
 
@@ -1540,7 +1588,6 @@ class App {
         $('btn-start').onclick=()=>this.game?.sendStartGame();
         $('btn-play').onclick=()=>this._playCards();
         $('btn-pass').onclick=()=>this.game?.sendPass();
-        $('btn-challenge').onclick=()=>this.game?.sendChallenge();
         $('btn-ffa-challenge').onclick=()=>this.game?.sendChallenge();
         $('btn-declare-confirm').onclick=()=>this._confirmDeclare();
         $('btn-play-again').onclick=()=>this.game?.sendPlayAgain();
@@ -1789,11 +1836,22 @@ class App {
         const ct=s.tableCardCount;
         const pw=210, ph=60; // usable area inside pool
         const cw=40, ch=56; // card-sm dimensions
+        const minInX=3, maxInX=pw-cw-3;
+        const minInY=0, maxInY=ph-ch;
+        const overflowX=14, overflowY=10;
         let h=''; const mx=Math.min(ct,24);
         for(let i=0;i<mx;i++){
             const rot=rng(-30,30);
-            const cx=Math.max(0, Math.min(rng(0, pw), pw-cw));
-            const cy=Math.max(0, Math.min(rng(0, ph), ph-ch));
+            let cx,cy;
+            const mostlyInside=Math.random()<0.84;
+            if(mostlyInside){
+                cx=rng(minInX,maxInX);
+                cy=rng(minInY,maxInY);
+            }else{
+                const leftEdge=Math.random()<0.5;
+                cx=leftEdge ? rng(-overflowX,minInX+2) : rng(maxInX-2,maxInX+overflowX);
+                cy=rng(minInY-overflowY,maxInY+overflowY);
+            }
             let dk=0, accum=0;
             for(const entry of (s.tablePlayLog||[])){
                 if(i<accum+entry.count){break;}
@@ -1835,18 +1893,15 @@ class App {
 
     _renderActions(s){
         const myTurn=this.game.isMyTurn();
-        const canCh=this.game.canChallenge();
-        const hasPlayed=!!s.lastPlayerId;
 
         $('btn-play').disabled=!(myTurn&&s.phase==='TURN'&&this.selectedCards.size>0);
         $('btn-pass').disabled=!(myTurn&&s.phase==='TURN');
-        $('btn-challenge').disabled=!(canCh&&hasPlayed&&s.phase==='TURN'&&s.challengeMode==='sequential');
-        $('btn-challenge').style.display=s.challengeMode==='sequential'?'':'none';
     }
 
     _updateFFA(s){
         const btn=$('btn-ffa-challenge');
-        if(s.challengeMode==='freeforall'&&s.phase==='TURN'&&s.lastPlayerId&&s.lastPlayerId!==this.game.myPlayerId)
+        const canCh=this.game.canChallenge();
+        if(s.phase==='TURN'&&s.lastPlayerId&&canCh)
             btn.classList.add('visible');
         else btn.classList.remove('visible');
     }
