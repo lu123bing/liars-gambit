@@ -599,7 +599,7 @@ body,html{
         <div id="lobby-qr"></div>
     </div>
     <div class="lobby-players sketch-border-alt" id="lobby-players-box">
-        <h3>👥 玩家 (<span id="lobby-player-count">0</span>/6)</h3>
+        <h3>👥 玩家 (<span id="lobby-player-count">0</span>/8)</h3>
         <div id="lobby-player-list"></div>
     </div>
     <div class="deck-selector sketch-border" id="deck-selector">
@@ -818,54 +818,9 @@ const BASE_URL = 'https://lu123bing.github.io/liars-gambit/';
 const SUITS = ['♠','♥','♦','♣'];
 const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 const RED_SUITS = new Set(['♥','♦']);
-const DEFAULT_NET_CONFIG = {
-    maxPlayers: 8,
-    heartbeatIntervalMs: 10000,
-    heartbeatTimeoutMs: 30000,
-    connectTimeoutMs: 8000,
-    challengeWindowMs: 100,
-    peerDebug: 0,
-    hostUseTurnIfConfigured: true,
-    ice: {
-        stun: [{ urls: 'stun:stun.l.google.com:19302' }]
-    },
-    turn: {
-        urls: [
-            'turn:global.relay.metered.ca:80',
-            'turn:global.relay.metered.ca:80?transport=tcp',
-            'turn:global.relay.metered.ca:443',
-            'turns:global.relay.metered.ca:443?transport=tcp'
-        ],
-        username: 'a5c3184b4a4836923cf6bd96',
-        credential: 'mcOUQqUdXie7PTd1'
-    }
-};
-function _readRuntimeNetConfig(){
-    let fromStorage={};
-    try{
-        const raw=localStorage.getItem('lg_net_config');
-        if(raw) fromStorage=JSON.parse(raw)||{};
-    }catch(e){}
-    const fromWindow=(typeof window!=='undefined'&&window.__LG_NET_CONFIG__&&typeof window.__LG_NET_CONFIG__==='object')
-        ? window.__LG_NET_CONFIG__ : {};
-    const merged={...DEFAULT_NET_CONFIG,...fromStorage,...fromWindow};
-    merged.ice={
-        ...DEFAULT_NET_CONFIG.ice,
-        ...(fromStorage.ice||{}),
-        ...(fromWindow.ice||{})
-    };
-    merged.turn={
-        ...DEFAULT_NET_CONFIG.turn,
-        ...(fromStorage.turn||{}),
-        ...(fromWindow.turn||{})
-    };
-    return merged;
-}
-const NET_CONFIG = _readRuntimeNetConfig();
-const MAX_PLAYERS = NET_CONFIG.maxPlayers;
-const HEARTBEAT_INTERVAL = NET_CONFIG.heartbeatIntervalMs;
-const HEARTBEAT_TIMEOUT = NET_CONFIG.heartbeatTimeoutMs;
-const CHALLENGE_WINDOW_MS = NET_CONFIG.challengeWindowMs;
+const MAX_PLAYERS = 8;
+const HEARTBEAT_INTERVAL = 5000;
+const HEARTBEAT_TIMEOUT = 16000;
 const DECK_COLORS = [
     { primary:'#B8453A', symbol:'●' },
     { primary:'#4A7C96', symbol:'◆' },
@@ -1016,28 +971,12 @@ class NetworkManager {
         this.destroyed=false; this._lastHostHB=0;
     }
     _pid(code){ return 'lg-'+code; }
-    _hasTurnConfig(){
-        const t=NET_CONFIG.turn||{};
-        return !!(t.urls&&t.username&&t.credential);
-    }
-    _peerOptions(useTurn=false){
-        const stun=(NET_CONFIG.ice?.stun||[]).map(s=>({ ...s }));
-        const servers=[...stun];
-        if(useTurn&&this._hasTurnConfig()){
-            servers.push({
-                urls: NET_CONFIG.turn.urls,
-                username: NET_CONFIG.turn.username,
-                credential: NET_CONFIG.turn.credential
-            });
-        }
-        return { debug:NET_CONFIG.peerDebug, config:{ iceServers:servers } };
-    }
 
     async createRoom(){
         this.isHost=true; this.roomCode=mkRoomCode();
         const pid=this._pid(this.roomCode);
         return new Promise((res,rej)=>{
-            this.peer=new Peer(pid,this._peerOptions(!!NET_CONFIG.hostUseTurnIfConfigured));
+            this.peer=new Peer(pid,{debug:0});
             this.peer.on('open',id=>{
                 this.myPeerId=id; this.hostPeerId=id;
                 this.peer.on('connection',c=>this._setupConn(c));
@@ -1054,25 +993,18 @@ class NetworkManager {
     async joinRoom(code){
         this.isHost=false; this.roomCode=code.toUpperCase();
         const hpid=this._pid(this.roomCode); this.hostPeerId=hpid;
-        const _connectOnce=(useTurn)=>new Promise((res,rej)=>{
-            this.peer=new Peer(undefined,this._peerOptions(useTurn));
+        return new Promise((res,rej)=>{
+            this.peer=new Peer(undefined,{debug:0});
             this.peer.on('open',id=>{
                 this.myPeerId=id;
                 const conn=this.peer.connect(hpid,{reliable:true});
                 conn.on('open',()=>{this.hostConn=conn;this._setupHostConn(conn);this._startHB();res();});
-                conn.on('error',()=>rej(new Error('无法连接到房间')));
-                setTimeout(()=>rej(new Error('连接超时')),NET_CONFIG.connectTimeoutMs);
+                conn.on('error',e=>rej(new Error('无法连接到房间')));
+                setTimeout(()=>rej(new Error('连接超时')),8000);
             });
             this.peer.on('error',e=>rej(e));
             this.peer.on('disconnected',()=>{ if(!this.destroyed) this.peer.reconnect(); });
         });
-        try{
-            await _connectOnce(false);
-        }catch(e){
-            if(!this._hasTurnConfig()) throw e;
-            try{ if(this.peer) this.peer.destroy(); }catch(_e){}
-            await _connectOnce(true);
-        }
     }
 
     // Setup for host receiving client connections
@@ -1166,48 +1098,8 @@ class GameEngine {
         this.onStateUpdate=null; this.onHandUpdate=null;
         this.onChallengeResult=null; this.onGameOver=null;
         this.onLog=null; this.onRequestDeclare=null;
-        this._challengeWindowTimer=null;
-        this._challengeRoundId=0;
-        this._challengeCandidates=[];
 
         this._bind();
-    }
-    _resetChallengeWindow(){
-        if(this._challengeWindowTimer){
-            clearTimeout(this._challengeWindowTimer);
-            this._challengeWindowTimer=null;
-        }
-        this._challengeCandidates=[];
-    }
-
-    _finalizeChallengeWindow(roundId){
-        const fs=this.fullState;
-        if(!fs) return;
-        if(roundId!==this._challengeRoundId) return;
-        if(!this._challengeCandidates.length){
-            this._resetChallengeWindow();
-            if(fs.phase==='RESOLVING'){
-                fs.phase='TURN';
-                fs.seq++;
-                this._broadcastState();
-            }
-            return;
-        }
-        const sorted=[...this._challengeCandidates].sort((a,b)=>{
-            if(a.hostRecvTs!==b.hostRecvTs) return a.hostRecvTs-b.hostRecvTs;
-            return String(a.challengerId).localeCompare(String(b.challengerId));
-        });
-        const winner=sorted[0];
-        const challenger=this._pById(winner.challengerId);
-        this._resetChallengeWindow();
-        if(!challenger||!challenger.connected) return;
-        this._resolveChallenge(challenger,{
-            challengeId:winner.challengeId,
-            clientTs:winner.clientTs,
-            hostRecvTs:winner.hostRecvTs,
-            winnerPeerId:winner.fromPeer,
-            challengeRoundId:roundId
-        });
     }
 
     _bind(){
@@ -1311,7 +1203,6 @@ class GameEngine {
     _startGame(){
         const fs=this.fullState;
         if(!fs||fs.players.filter(p=>p.connected).length<2)return;
-        this._resetChallengeWindow();
 
         const deck=CardEngine.shuffle(CardEngine.createDecks(fs.deckCount));
         const active=fs.players.filter(p=>p.connected);
@@ -1422,8 +1313,7 @@ class GameEngine {
     // ─── HOST: Challenge ───
     _onChallenge(d,from){
         const fs=this.fullState;
-        if(!fs||!fs.lastPlayerId)return;
-        if(fs.phase!=='TURN' && !(fs.phase==='RESOLVING'&&this._challengeWindowTimer)) return;
+        if(!fs||fs.phase!=='TURN'||!fs.lastPlayerId)return;
         const challenger=this._pByPeer(from); if(!challenger)return;
         if(challenger.id===fs.lastPlayerId)return;
 
@@ -1432,31 +1322,10 @@ class GameEngine {
             if(challenger.id!==cur.id)return;
         }
 
-        const challengeId=d.challengeId||(`${challenger.id}-${Date.now()}-${Math.random().toString(16).slice(2,6)}`);
-        if(this._challengeCandidates.some(c=>c.challengerId===challenger.id)) return;
-
-        if(!this._challengeWindowTimer){
-            this._challengeRoundId++;
-            fs.phase='RESOLVING'; fs.seq++;
-            this._broadcastState();
-            this._challengeWindowTimer=setTimeout(()=>this._finalizeChallengeWindow(this._challengeRoundId),CHALLENGE_WINDOW_MS);
-        }
-        this._challengeCandidates.push({
-            challengerId:challenger.id,
-            fromPeer:from,
-            challengeId,
-            clientTs:typeof d.clientTs==='number'?d.clientTs:null,
-            hostRecvTs:Date.now()
-        });
-    }
-
-    _resolveChallenge(challenger,meta={}){
-        const fs=this.fullState;
-        if(!fs||!fs.lastPlayerId) return;
+        fs.phase='RESOLVING'; fs.seq++;
         const lastPlay=fs.tablePlayLog[fs.tablePlayLog.length-1];
         if(!lastPlay)return;
         const target=this._pById(fs.lastPlayerId);
-        if(!target)return;
         const revealed=lastPlay.cards;
         const isLiar=revealed.some(c=>c.rank!==fs.declaredRank&&!c.isJoker);
 
@@ -1476,13 +1345,7 @@ class GameEngine {
             challengerId:challenger.id, challengerName:challenger.name,
             targetId:target.id, targetName:target.name,
             cards:revealed, declaredRank:fs.declaredRank,
-            isLiar, loserId, loserName:loser.name, totalCards,
-            winningChallengeId:meta.challengeId||null,
-            challengeRoundId:meta.challengeRoundId||null,
-            winnerPeerId:meta.winnerPeerId||null,
-            hostRecvTs:meta.hostRecvTs||null,
-            clientTs:meta.clientTs||null,
-            arbitrationWindowMs:CHALLENGE_WINDOW_MS
+            isLiar, loserId, loserName:loser.name, totalCards
         };
         this.net.broadcastAndSelf(result);
 
@@ -1520,7 +1383,6 @@ class GameEngine {
     // ─── HOST: Round end ───
     _roundEnd(){
         const fs=this.fullState;
-        this._resetChallengeWindow();
         fs.discardPile.push(...fs.tableCards);
         this._log(`所有人都跳过了，${fs.tableCards.length} 张牌进入弃牌堆`);
 
@@ -1547,7 +1409,6 @@ class GameEngine {
     // ─── HOST: Game over (or winner continue) ───
     _gameOver(winner){
         const fs=this.fullState;
-        this._resetChallengeWindow();
         if(!fs.winners)fs.winners=[];
         fs.winners.push(winner.id);
         this._log(`🏆 ${winner.name} 获胜！率先打光了所有手牌！`,true);
@@ -1692,13 +1553,7 @@ class GameEngine {
     sendDeclare(rank){this.net.sendToHost({type:'DECLARE',rank});}
     sendPlayCards(ids){this.net.sendToHost({type:'PLAY_CARDS',cardIds:ids});}
     sendPass(){this.net.sendToHost({type:'PASS'});}
-    sendChallenge(){
-        this.net.sendToHost({
-            type:'CHALLENGE',
-            challengeId:`${this.myPlayerId}-${Date.now()}-${Math.random().toString(16).slice(2,6)}`,
-            clientTs:Date.now()
-        });
-    }
+    sendChallenge(){this.net.sendToHost({type:'CHALLENGE'});}
     sendDeckCount(c){this.net.sendToHost({type:'DECK_COUNT',count:c});}
     sendStartGame(){this.net.sendToHost({type:'START_GAME'});}
     sendPlayAgain(){this.net.sendToHost({type:'PLAY_AGAIN'});}
@@ -2320,7 +2175,7 @@ class App {
             const pid='lg-'+code+'-m'; this.net.hostPeerId=pid;
 
             await new Promise((res,rej)=>{
-                this.net.peer=new Peer(pid,this.net._peerOptions(!!NET_CONFIG.hostUseTurnIfConfigured));
+                this.net.peer=new Peer(pid,{debug:0});
                 this.net.peer.on('open',id=>{
                     this.net.myPeerId=id;
                     this.net.peer.on('connection',c=>this.net._setupConn(c));
@@ -2374,7 +2229,7 @@ class App {
                 this.net=new NetworkManager();
                 this.net.isHost=false; this.net.roomCode=code; this.net.hostPeerId=newPid;
                 await new Promise((res,rej)=>{
-                    this.net.peer=new Peer(undefined,this.net._peerOptions(false));
+                    this.net.peer=new Peer(undefined,{debug:0});
                     this.net.peer.on('open',id=>{
                         this.net.myPeerId=id;
                         const conn=this.net.peer.connect(newPid,{reliable:true});
