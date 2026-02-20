@@ -98,6 +98,25 @@ body,html{
 .home-actions{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%;max-width:280px}
 .home-join-row{display:flex;gap:8px;width:100%}
 .home-join-row .input-sketch{flex:1;width:auto;text-transform:uppercase;letter-spacing:3px;font-size:1.3rem}
+.home-net-setting{
+    width:100%;max-width:280px;padding:8px 10px;
+    background:rgba(255,255,255,.35);border:2px dashed var(--ink-black);
+    border-radius:12px 22px 10px 18px;font-size:.9rem;
+}
+.home-net-setting .setting-row{padding:2px 0;border-bottom:none}
+.home-net-tip{font-size:.75rem;color:#888;margin-top:4px;text-align:left;line-height:1.3}
+.home-turn-panel{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(0,0,0,.25);text-align:left}
+.home-turn-panel.hidden{display:none}
+.home-turn-input{
+    width:100%;margin-top:6px;padding:8px 10px;
+    border:2px dashed var(--ink-black);border-radius:10px;
+    background:rgba(255,255,255,.6);font-family:inherit;font-size:.85rem;color:var(--text-brown);
+    outline:none;text-align:left;transform:none;
+}
+.home-turn-input:focus{border-style:solid;background:rgba(255,255,255,.9)}
+.home-turn-actions{display:flex;gap:8px;margin-top:8px}
+.home-turn-actions .doodle-btn{flex:1;padding:7px 10px;font-size:.85rem;box-shadow:3px 3px 0 var(--ink-black)}
+.home-turn-status{font-size:.74rem;color:#7f6f5c;margin-top:6px;line-height:1.3}
 
 /* ═══════════════════════════════════════════════
    BUTTONS
@@ -585,6 +604,27 @@ body,html{
             <button class="doodle-btn btn-green" id="btn-join">加入</button>
         </div>
     </div>
+    <div class="home-net-setting">
+        <div class="setting-row">
+            <span class="setting-label">远程联机(非局域网)</span>
+            <div class="toggle-switch" id="toggle-remote-online" onclick="app.toggleRemoteOnline()"></div>
+        </div>
+        <div class="home-net-tip">默认关闭：仅走 STUN; 开启后才会在失败时尝试 TURN 中继。注意: 仅在需要时才开启远程联机功能，以避免不必要的网络延迟。</div>
+        <button class="doodle-btn btn-sm btn-wide" id="btn-toggle-turn-panel" style="margin-top:8px;">🛠️ 自定义 TURN 服务器</button>
+        <div class="home-turn-panel hidden" id="turn-panel">
+            <div style="font-size:.8rem;color:#666;">TURN URLs（每行一个）</div>
+            <textarea id="input-turn-urls" class="home-turn-input" rows="3" placeholder="turn:host:3478\nturns:host:5349?transport=tcp"></textarea>
+            <div style="font-size:.8rem;color:#666;margin-top:6px;">用户名</div>
+            <input id="input-turn-username" class="home-turn-input" placeholder="TURN username" autocomplete="off">
+            <div style="font-size:.8rem;color:#666;margin-top:6px;">密码</div>
+            <input id="input-turn-credential" class="home-turn-input" placeholder="TURN credential" autocomplete="off">
+            <div class="home-turn-actions">
+                <button class="doodle-btn btn-blue" id="btn-save-turn">保存</button>
+                <button class="doodle-btn btn-red" id="btn-clear-turn">清空</button>
+            </div>
+            <div class="home-turn-status" id="turn-config-status">当前：使用内置 TURN 配置</div>
+        </div>
+    </div>
 </div>
 
 <!-- ═══════════ SCREEN: LOBBY ═══════════ -->
@@ -599,7 +639,7 @@ body,html{
         <div id="lobby-qr"></div>
     </div>
     <div class="lobby-players sketch-border-alt" id="lobby-players-box">
-        <h3>👥 玩家 (<span id="lobby-player-count">0</span>/6)</h3>
+        <h3>👥 玩家 (<span id="lobby-player-count">0</span>/<span id="lobby-player-max">?</span>)</h3>
         <div id="lobby-player-list"></div>
     </div>
     <div class="deck-selector sketch-border" id="deck-selector">
@@ -758,8 +798,8 @@ body,html{
 
         <h3>👑 庄家起手</h3>
         <ul>
-            <li>每轮开始，庄家指定一个<span class="rule-highlight">目标数字</span>（如 "8"）。</li>
-            <li>庄家必须先出牌，声称它们都是指定数字。</li>
+            <li>每轮开始，庄家(弹出庄家宣言窗口的人)指定一个<span class="rule-highlight">目标数字</span>（如 "8"）。</li>
+            <li>庄家先指定一个数字, 然后声明出一定数量的此数字的牌 (如 3 张 "8")。</li>
             <li>声明的 <b>数量必须真实</b>（打几张说几张），但<b>数字可以造假</b>！</li>
         </ul>
 
@@ -818,6 +858,8 @@ const BASE_URL = 'https://lu123bing.github.io/liars-gambit/';
 const SUITS = ['♠','♥','♦','♣'];
 const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 const RED_SUITS = new Set(['♥','♦']);
+const REMOTE_ONLINE_STORAGE_KEY = 'lg_enable_remote_online';
+const CUSTOM_TURN_STORAGE_KEY = 'lg_custom_turn_config';
 const DEFAULT_NET_CONFIG = {
     maxPlayers: 8,
     heartbeatIntervalMs: 10000,
@@ -825,6 +867,7 @@ const DEFAULT_NET_CONFIG = {
     connectTimeoutMs: 8000,
     challengeWindowMs: 100,
     peerDebug: 0,
+    remoteOnlineEnabled: false,
     hostUseTurnIfConfigured: true,
     ice: {
         stun: [{ urls: 'stun:stun.l.google.com:19302' }]
@@ -836,8 +879,9 @@ const DEFAULT_NET_CONFIG = {
             'turn:global.relay.metered.ca:443',
             'turns:global.relay.metered.ca:443?transport=tcp'
         ],
-        username: 'a5c3184b4a4836923cf6bd96',
-        credential: 'mcOUQqUdXie7PTd1'
+        username: '9e2e5450e6f05266678650e7',
+        credential: 'zwo+0bAQys8L6Zsl'
+ 
     }
 };
 function _readRuntimeNetConfig(){
@@ -862,7 +906,58 @@ function _readRuntimeNetConfig(){
     return merged;
 }
 const NET_CONFIG = _readRuntimeNetConfig();
-const MAX_PLAYERS = NET_CONFIG.maxPlayers;
+function _readRemoteOnlineEnabled(){
+    try{ return localStorage.getItem(REMOTE_ONLINE_STORAGE_KEY)==='1'; }
+    catch(e){ return false; }
+}
+function _setRemoteOnlineEnabled(enabled){
+    NET_CONFIG.remoteOnlineEnabled=!!enabled;
+    try{ localStorage.setItem(REMOTE_ONLINE_STORAGE_KEY,enabled?'1':'0'); }catch(e){}
+}
+function _normalizeTurnUrls(raw){
+    if(Array.isArray(raw)) return raw.map(v=>String(v||'').trim()).filter(Boolean);
+    return String(raw||'').split(/[\n,]+/).map(v=>v.trim()).filter(Boolean);
+}
+function _readCustomTurnConfig(){
+    try{
+        const raw=localStorage.getItem(CUSTOM_TURN_STORAGE_KEY);
+        if(!raw) return null;
+        const cfg=JSON.parse(raw)||{};
+        return {
+            urls:_normalizeTurnUrls(cfg.urls),
+            username:String(cfg.username||'').trim(),
+            credential:String(cfg.credential||'').trim()
+        };
+    }catch(e){
+        return null;
+    }
+}
+function _setCustomTurnConfig(cfg){
+    try{
+        localStorage.setItem(CUSTOM_TURN_STORAGE_KEY,JSON.stringify({
+            urls:_normalizeTurnUrls(cfg?.urls),
+            username:String(cfg?.username||'').trim(),
+            credential:String(cfg?.credential||'').trim()
+        }));
+    }catch(e){}
+}
+function _clearCustomTurnConfig(){
+    try{ localStorage.removeItem(CUSTOM_TURN_STORAGE_KEY); }catch(e){}
+}
+function _getEffectiveTurnConfig(){
+    const c=_readCustomTurnConfig();
+    if(c&&c.urls?.length&&c.username&&c.credential) return c;
+    return NET_CONFIG.turn||{};
+}
+function _isCustomTurnConfigActive(){
+    const c=_readCustomTurnConfig();
+    return !!(c&&c.urls?.length&&c.username&&c.credential);
+}
+function _getRoomMaxPlayers(){
+    if(!NET_CONFIG.remoteOnlineEnabled) return 9;
+    return _isCustomTurnConfigActive()?9:6;
+}
+NET_CONFIG.remoteOnlineEnabled=_readRemoteOnlineEnabled();
 const HEARTBEAT_INTERVAL = NET_CONFIG.heartbeatIntervalMs;
 const HEARTBEAT_TIMEOUT = NET_CONFIG.heartbeatTimeoutMs;
 const CHALLENGE_WINDOW_MS = NET_CONFIG.challengeWindowMs;
@@ -1017,17 +1112,19 @@ class NetworkManager {
     }
     _pid(code){ return 'lg-'+code; }
     _hasTurnConfig(){
-        const t=NET_CONFIG.turn||{};
-        return !!(t.urls&&t.username&&t.credential);
+        if(!NET_CONFIG.remoteOnlineEnabled) return false;
+        const t=_getEffectiveTurnConfig();
+        return !!(t.urls&&t.urls.length&&t.username&&t.credential);
     }
     _peerOptions(useTurn=false){
         const stun=(NET_CONFIG.ice?.stun||[]).map(s=>({ ...s }));
         const servers=[...stun];
         if(useTurn&&this._hasTurnConfig()){
+            const t=_getEffectiveTurnConfig();
             servers.push({
-                urls: NET_CONFIG.turn.urls,
-                username: NET_CONFIG.turn.username,
-                credential: NET_CONFIG.turn.credential
+                urls: t.urls,
+                username: t.username,
+                credential: t.credential
             });
         }
         return { debug:NET_CONFIG.peerDebug, config:{ iceServers:servers } };
@@ -1258,7 +1355,8 @@ class GameEngine {
             phase:'LOBBY', players:[], currentPlayerIndex:-1, dealerIndex:-1,
             declaredRank:null, challengeMode:'sequential',
             tableCards:[], tablePlayLog:[], lastPlayerId:null, lastPlayCount:0,
-            passCount:0, deckCount, discardPile:[], seq:0, showPlayLog:true
+            passCount:0, deckCount, discardPile:[], seq:0, showPlayLog:true,
+            maxPlayers:_getRoomMaxPlayers()
         };
         this._addPlayer(this.myPlayerId,this.myName,this.net.myPeerId);
         this._broadcastState();
@@ -1268,7 +1366,8 @@ class GameEngine {
         const fs=this.fullState; if(!fs)return null;
         const ex=fs.players.find(p=>p.id===id);
         if(ex){ex.connected=true;ex.peerId=peerId;return ex;}
-        if(fs.players.length>=MAX_PLAYERS)return null;
+        const maxPlayers=fs.maxPlayers||_getRoomMaxPlayers();
+        if(fs.players.length>=maxPlayers)return null;
         const p={id,name:name||('玩家'+(fs.players.length+1)),peerId,hand:[],handCount:0,connected:true,joinOrder:fs.players.length};
         fs.players.push(p); return p;
     }
@@ -1620,6 +1719,7 @@ class GameEngine {
             tablePlayLog:(fs.tablePlayLog||[]).map(e=>({playerId:e.playerId,count:e.cards.length})),
             lastPlayerId:fs.lastPlayerId, lastPlayCount:fs.lastPlayCount,
             passCount:fs.passCount, deckCount:fs.deckCount,
+            maxPlayers:fs.maxPlayers||_getRoomMaxPlayers(),
             discardCount:(fs.discardPile||[]).length, seq:fs.seq,
             showPlayLog:fs.showPlayLog!==false,
             winners:fs.winners||[]
@@ -1728,6 +1828,9 @@ class App {
     _bindHome(){
         $('btn-create').onclick=()=>this._create();
         $('btn-join').onclick=()=>this._join();
+        $('btn-toggle-turn-panel').onclick=()=>this.toggleTurnPanel();
+        $('btn-save-turn').onclick=()=>this.saveCustomTurnConfig();
+        $('btn-clear-turn').onclick=()=>this.clearCustomTurnConfig();
         $('input-room-code').addEventListener('keyup',e=>{if(e.key==='Enter')this._join();});
         $('input-name').addEventListener('keyup',e=>{if(e.key==='Enter')$('btn-create').focus();});
         $('btn-start').onclick=()=>this.game?.sendStartGame();
@@ -1739,6 +1842,56 @@ class App {
         $('btn-back-home').onclick=()=>this._backHome();
         const sn=localStorage.getItem('lg_playerName');
         if(sn)$('input-name').value=sn;
+        this._applyRemoteOnlineToggleUI();
+        this._applyCustomTurnUI();
+    }
+
+    _applyRemoteOnlineToggleUI(){
+        $('toggle-remote-online')?.classList.toggle('active',!!NET_CONFIG.remoteOnlineEnabled);
+    }
+
+    toggleRemoteOnline(){
+        const next=!NET_CONFIG.remoteOnlineEnabled;
+        _setRemoteOnlineEnabled(next);
+        this._applyRemoteOnlineToggleUI();
+        showToast(next?'已开启远程联机：可使用 TURN':'已关闭远程联机：不使用 TURN');
+    }
+
+    _applyCustomTurnUI(){
+        const cfg=_readCustomTurnConfig();
+        const urls=(cfg?.urls||[]).join('\n');
+        $('input-turn-urls').value=urls;
+        $('input-turn-username').value=cfg?.username||'';
+        $('input-turn-credential').value=cfg?.credential||'';
+        const useCustom=!!(cfg&&cfg.urls?.length&&cfg.username&&cfg.credential);
+        $('turn-config-status').textContent=useCustom
+            ? `当前：使用自定义 TURN（${cfg.urls.length} 个地址）`
+            : '当前：使用内置 TURN 配置';
+    }
+
+    toggleTurnPanel(){
+        const p=$('turn-panel');
+        if(!p) return;
+        p.classList.toggle('hidden');
+    }
+
+    saveCustomTurnConfig(){
+        const urls=_normalizeTurnUrls($('input-turn-urls').value);
+        const username=$('input-turn-username').value.trim();
+        const credential=$('input-turn-credential').value.trim();
+        if(!urls.length||!username||!credential){
+            showToast('请完整填写 TURN URLs / 用户名 / 密码');
+            return;
+        }
+        _setCustomTurnConfig({urls,username,credential});
+        this._applyCustomTurnUI();
+        showToast('已保存自定义 TURN 配置');
+    }
+
+    clearCustomTurnConfig(){
+        _clearCustomTurnConfig();
+        this._applyCustomTurnUI();
+        showToast('已清空自定义 TURN，恢复内置配置');
     }
 
     _getName(){
@@ -1851,6 +2004,7 @@ class App {
     _showLobby(code,isHost){
         showScreen('lobby');
         $('lobby-room-code').textContent=code;
+        $('lobby-player-max').textContent=_getRoomMaxPlayers();
         const qr=$('lobby-qr'); qr.innerHTML='';
         try{
             const url=BASE_URL+'?room='+code;
@@ -1866,6 +2020,7 @@ class App {
         if(!state)return;
         const ps=state.players;
         $('lobby-player-count').textContent=ps.length;
+        $('lobby-player-max').textContent=state.maxPlayers||_getRoomMaxPlayers();
         let h='';
         for(const p of ps){
             const isH=p.joinOrder===0, isMe=p.id===this.game.myPlayerId;
@@ -2342,7 +2497,8 @@ class App {
                 tableCards:[], tablePlayLog:oldState.tablePlayLog||[],
                 lastPlayerId:oldState.lastPlayerId, lastPlayCount:oldState.lastPlayCount,
                 passCount:oldState.passCount, deckCount:oldState.deckCount,
-                discardPile:[], seq:(oldState.seq||0)+1
+                discardPile:[], seq:(oldState.seq||0)+1,
+                maxPlayers:oldState.maxPlayers||_getRoomMaxPlayers()
             };
             const myP=this.game.fullState.players.find(p=>p.id===this.game.myPlayerId);
             if(myP){myP.peerId=this.net.myPeerId;myP.hand=oldHand;myP.handCount=oldHand.length;}
