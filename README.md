@@ -74,7 +74,6 @@
 - [QRCode.js](https://davidshimjs.github.io/qrcodejs/)（CDN）
 - Google Fonts: Patrick Hand
 
-
 ## 📜 游戏规则 (骗子博弈)
 
 ### 🎯 游戏目标
