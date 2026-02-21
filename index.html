@@ -55,14 +55,36 @@ body,html{
 .screen.active{display:flex}
 
 /* ═══════════════════════════════════════════════
+   BACKGROUND DECORATIONS
+   ═══════════════════════════════════════════════ */
+.bg-decorations {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0; /* Keep behind all interactive elements but above screen background */
+    overflow: hidden;
+}
+.bg-suit {
+    position: absolute;
+    font-family: 'Patrick Hand', cursive;
+    opacity: 0.12;
+    font-size: 3.5rem;
+    color: var(--ink-black);
+    filter: drop-shadow(3px 3px 0px rgba(0,0,0,0.1));
+    user-select: none;
+    z-index: 0;
+}
+.bg-suit.suit-red { color: var(--stamp-red); }
+
+/* ═══════════════════════════════════════════════
    HOME SCREEN
    ═══════════════════════════════════════════════ */
-#screen-home{justify-content:center;align-items:center;gap:20px;text-align:center}
-.home-title{font-family:'ZCOOL KuaiLe',cursive;font-size:3.5rem;font-weight:900;transform:rotate(-2deg);line-height:1.1;text-shadow:3px 3px 0px #fff, 5px 5px 0px var(--ink-black);letter-spacing:2px}
-.home-subtitle{font-family:'Pangolin',cursive;font-size:1.5rem;color:var(--stamp-red);transform:rotate(1deg);margin-top:-8px}
+#screen-home{justify-content:center;align-items:center;gap:20px;text-align:center;position:relative;z-index:1;}
+.home-title{font-family:'ZCOOL KuaiLe',cursive;font-size:3.5rem;font-weight:900;transform:rotate(-2deg);line-height:1.1;text-shadow:3px 3px 0px #fff, 5px 5px 0px var(--ink-black);letter-spacing:2px;position:relative;z-index:2;}
+.home-subtitle{font-family:'Pangolin',cursive;font-size:1.5rem;color:var(--stamp-red);transform:rotate(1deg);margin-top:-8px;position:relative;z-index:2;}
 .home-card-deco{
     font-size:6rem;transform:rotate(-8deg);filter:drop-shadow(2px 2px 0 rgba(0,0,0,.1));
-    position:relative;display:inline-block;
+    position:relative;display:inline-block;z-index:2;
 }
 .home-card-deco.wobble{animation:joker-wobble 1.8s ease-in-out infinite}
 @keyframes joker-wobble{
@@ -92,16 +114,18 @@ body,html{
     border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
     padding:12px 16px;font-family:inherit;font-size:1.1rem;color:var(--text-brown);
     text-align:center;width:220px;outline:none;transform:rotate(-0.5deg);
+    position:relative;z-index:2;
 }
 .input-sketch:focus{border-style:solid;background:rgba(255,255,255,.9);transform:rotate(0.5deg) scale(1.02)}
 .input-sketch::placeholder{color:#aaa}
-.home-actions{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%;max-width:280px}
+.home-actions{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%;max-width:280px;position:relative;z-index:2;}
 .home-join-row{display:flex;gap:8px;width:100%}
 .home-join-row .input-sketch{flex:1;width:auto;text-transform:uppercase;letter-spacing:3px;font-size:1.3rem}
 .home-net-setting{
     width:100%;max-width:280px;padding:8px 10px;
     background:rgba(255,255,255,.35);border:2px dashed var(--ink-black);
     border-radius:12px 22px 10px 18px;font-size:.9rem;
+    position:relative;z-index:2;
 }
 .home-net-setting .setting-row{padding:2px 0;border-bottom:none}
 .home-net-tip{font-size:.75rem;color:#888;margin-top:4px;text-align:left;line-height:1.3}
@@ -153,13 +177,14 @@ body,html{
 /* ═══════════════════════════════════════════════
    LOBBY SCREEN
    ═══════════════════════════════════════════════ */
-#screen-lobby{align-items:center;gap:16px;padding-top:20px}
-.lobby-header{font-size:1.6rem;font-weight:900;text-align:center;transform:rotate(-1deg)}
+#screen-lobby{align-items:center;gap:16px;padding-top:20px;position:relative;z-index:1;}
+.lobby-header{font-size:1.6rem;font-weight:900;text-align:center;transform:rotate(-1deg);position:relative;z-index:2;}
 .lobby-room-info{
     display:flex;align-items:center;gap:16px;padding:12px;
     background:rgba(255,255,255,.4);width:100%;max-width:360px;
     border:2px dashed var(--ink-black);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
     transform:rotate(-0.5deg);
+    position:relative;z-index:2;
 }
 .lobby-room-code{font-size:2.2rem;font-weight:900;letter-spacing:5px;color:var(--marker-blue)}
 #lobby-qr{flex-shrink:0}
@@ -169,6 +194,7 @@ body,html{
     border:2px solid var(--ink-black);border-radius:15px 225px 15px 255px/225px 15px 255px 15px;
     transform:rotate(0.5deg);
     box-shadow:3px 3px 0 rgba(0,0,0,.15);
+    position:relative;z-index:2;
 }
 .lobby-players h3{margin-bottom:8px;transform:rotate(-.5deg)}
 .player-slot{display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px dashed #ccc;font-size:1.1rem}
@@ -183,6 +209,7 @@ body,html{
     border:2px solid var(--ink-black);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
     transform:rotate(-0.3deg);
     box-shadow:3px 3px 0 rgba(0,0,0,.15);
+    position:relative;z-index:2;
 }
 .deck-selector h3{margin-bottom:10px;transform:rotate(.5deg)}
 .deck-options{display:flex;justify-content:center;gap:12px}
@@ -207,6 +234,7 @@ body,html{
     border:2px solid var(--ink-black);border-radius:15px 225px 10px 225px/225px 15px 225px 15px;
     transform:rotate(0.3deg);
     box-shadow:3px 3px 0 rgba(0,0,0,.15);
+    position:relative;z-index:2;
 }
 .lobby-settings h3{margin-bottom:10px;transform:rotate(-.5deg)}
 .lobby-settings.disabled{opacity:.5;pointer-events:none}
@@ -220,7 +248,7 @@ body,html{
 .toggle-switch.active{background:#8BC34A}
 .toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:1px 1px 2px rgba(0,0,0,.15)}
 .toggle-switch.active::after{transform:translateX(20px)}
-.lobby-footer{margin-top:auto;padding:12px 0;width:100%;max-width:360px}
+.lobby-footer{margin-top:auto;padding:12px 0;width:100%;max-width:360px;position:relative;z-index:2;}
 .lobby-hint{text-align:center;font-size:.9rem;color:#999;margin-top:8px}
 
 /* ═══════════════════════════════════════════════
@@ -309,9 +337,23 @@ body,html{
 .pool-count{font-weight:900;font-size:1.4rem;text-align:center;color:#3A2800;text-shadow:0 1px 0 rgba(255,255,255,.3);line-height:1.1;position:relative;z-index:2}
 .pool-last-play{font-size:1.2rem;color:#372714;text-align:center;text-shadow:0 1px 0 rgba(255,255,255,.2);position:relative;z-index:2}
 
-/* Opponent action shake */
-@keyframes opp-shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-4px) rotate(-1deg)}30%{transform:translateX(3px) rotate(1deg)}45%{transform:translateX(-3px)}60%{transform:translateX(2px)}75%{transform:translateX(-1px)}}
-.opponent-card.opp-acted{animation:opp-shake .4s ease}
+/* Opponent action pulse */
+@keyframes opp-pulse {
+    0%, 100% { transform: rotate(var(--opp-rot, 0deg)) scale(1); }
+    50% { transform: rotate(var(--opp-rot, 0deg)) scale(1.1); }
+}
+.opponent-card.opp-acted { animation: opp-pulse .4s ease; }
+
+/* Opponent penalty shake and flash */
+@keyframes opp-penalty {
+    0%, 100% { transform: rotate(var(--opp-rot, 0deg)) translateX(0); background: #fff; }
+    15% { transform: rotate(var(--opp-rot, 0deg)) translateX(-4px) rotate(-1deg); background: #ffcccc; }
+    30% { transform: rotate(var(--opp-rot, 0deg)) translateX(3px) rotate(1deg); background: #ffcccc; }
+    45% { transform: rotate(var(--opp-rot, 0deg)) translateX(-3px); background: #ffcccc; }
+    60% { transform: rotate(var(--opp-rot, 0deg)) translateX(2px); background: #ffcccc; }
+    75% { transform: rotate(var(--opp-rot, 0deg)) translateX(-1px); background: #ffcccc; }
+}
+.opponent-card.opp-penalty { animation: opp-penalty .5s ease; }
 
 /* Action area */
 .action-area{display:flex;justify-content:space-around;align-items:center;padding:8px 4px;gap:6px;flex-shrink:0;min-height:54px;flex-wrap:wrap}
@@ -603,6 +645,18 @@ body,html{
 
 <!-- ═══════════ SCREEN: HOME ═══════════ -->
 <div id="screen-home" class="screen active">
+    <div class="bg-decorations">
+        <div class="bg-suit" style="top: 5%; left: 20%; transform: rotate(-25deg) scale(1.2);">♠️</div>
+        <div class="bg-suit suit-red" style="top: 8%; right: 22%; transform: rotate(15deg) scale(0.9);">♥️</div>
+        <div class="bg-suit" style="top: 22%; left: 10%; transform: rotate(-45deg) scale(1.5);">♣️</div>
+        <div class="bg-suit suit-red" style="top: 25%; right: 12%; transform: rotate(35deg) scale(1.1);">♦️</div>
+        <div class="bg-suit" style="top: 40%; left: 18%; transform: rotate(-10deg) scale(0.8);">♠️</div>
+        <div class="bg-suit suit-red" style="top: 42%; right: 15%; transform: rotate(20deg) scale(1.3);">♥️</div>
+        <div class="bg-suit" style="top: 60%; left: 8%; transform: rotate(-30deg) scale(1);">♣️</div>
+        <div class="bg-suit suit-red" style="top: 65%; right: 10%; transform: rotate(40deg) scale(0.9);">♦️</div>
+        <div class="bg-suit" style="top: 80%; left: 25%; transform: rotate(-15deg) scale(1.4);">♠️</div>
+        <div class="bg-suit suit-red" style="top: 85%; right: 28%; transform: rotate(10deg) scale(1.2);">♥️</div>
+    </div>
     <button class="rules-btn" onclick="app.showRules()" title="游戏规则">?</button>
     <div class="home-card-deco wobble" id="home-joker">🃏<span class="home-liar-stamp" id="home-liar-stamp">LIAR!</span></div>
     <div class="home-title">骗子博弈</div>
@@ -641,6 +695,14 @@ body,html{
 
 <!-- ═══════════ SCREEN: LOBBY ═══════════ -->
 <div id="screen-lobby" class="screen">
+    <div class="bg-decorations">
+        <div class="bg-suit" style="top: 10%; left: 15%; transform: rotate(-20deg) scale(1.1);">♣️</div>
+        <div class="bg-suit suit-red" style="top: 15%; right: 20%; transform: rotate(30deg) scale(1.3);">♦️</div>
+        <div class="bg-suit suit-red" style="top: 45%; left: 10%; transform: rotate(-10deg) scale(0.9);">♥️</div>
+        <div class="bg-suit" style="top: 50%; right: 15%; transform: rotate(25deg) scale(1.4);">♠️</div>
+        <div class="bg-suit" style="top: 80%; left: 20%; transform: rotate(-35deg) scale(1.2);">♣️</div>
+        <div class="bg-suit suit-red" style="top: 85%; right: 25%; transform: rotate(15deg) scale(1);">♦️</div>
+    </div>
     <div class="lobby-header">🎴 等待中...</div>
     <button class="lobby-rules-btn" onclick="app.showRules()">📖 规则说明</button>
     <div class="lobby-room-info sketch-border">
@@ -2400,7 +2462,74 @@ class App {
 
         setTimeout(()=>{
             overlay.classList.remove('active'); stamp.classList.remove('animate');
-            this._showChDetail(d);
+            
+            // --- NEW: Card flying animation ---
+            const poolCards = document.querySelectorAll('.pool-card');
+            let targetEl = null;
+            
+            // Determine target: local player's hand or opponent's avatar
+            if (d.loserId === this.game.myPlayerId) {
+                targetEl = $('hand-area');
+            } else {
+                targetEl = document.querySelector(`.opponent-card[data-pid="${d.loserId}"]`);
+            }
+
+            if (poolCards.length > 0 && targetEl) {
+                const targetRect = targetEl.getBoundingClientRect();
+                const targetX = targetRect.left + targetRect.width / 2;
+                const targetY = targetRect.top + targetRect.height / 2;
+
+                poolCards.forEach((card, i) => {
+                    const rect = card.getBoundingClientRect();
+                    const clone = card.cloneNode(true);
+                    
+                    // Calculate center of the original card
+                    const startX = rect.left + rect.width / 2;
+                    const startY = rect.top + rect.height / 2;
+                    
+                    // Append to body to avoid overflow clipping
+                    clone.style.position = 'fixed';
+                    clone.style.left = `${startX - card.offsetWidth / 2}px`;
+                    clone.style.top = `${startY - card.offsetHeight / 2}px`;
+                    clone.style.margin = '0';
+                    clone.style.zIndex = '9999';
+                    clone.style.transition = 'all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1)';
+                    
+                    document.body.appendChild(clone);
+                    card.style.opacity = '0'; // Hide original
+
+                    // Trigger fly animation with slight stagger
+                    setTimeout(() => {
+                        clone.style.left = `${targetX - card.offsetWidth / 2}px`;
+                        clone.style.top = `${targetY - card.offsetHeight / 2}px`;
+                        clone.style.transform = `rotate(0deg) scale(0.2)`;
+                        clone.style.opacity = '0';
+                    }, i * 20 + 10);
+
+                    // Cleanup clone
+                    setTimeout(() => {
+                        clone.remove();
+                    }, i * 20 + 600);
+                });
+
+                // Trigger penalty animation on the target
+                if (d.loserId !== this.game.myPlayerId) {
+                    targetEl.classList.add('opp-penalty');
+                    targetEl.addEventListener('animationend', () => targetEl.classList.remove('opp-penalty'), {once: true});
+                } else {
+                    $('screen-game')?.classList.add('shake');
+                    setTimeout(()=>$('screen-game')?.classList.remove('shake'), 400);
+                }
+
+                // Wait for the longest animation to finish before showing detail overlay
+                const maxDelay = poolCards.length * 20 + 500;
+                setTimeout(() => {
+                    this._showChDetail(d);
+                }, maxDelay + 100);
+            } else {
+                // Fallback if no cards or target found
+                this._showChDetail(d);
+            }
         },1200);
     }
 
