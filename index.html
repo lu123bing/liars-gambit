@@ -134,7 +134,7 @@ body,html{
 .doodle-btn:nth-child(3n){transform:rotate(0.5deg)}
 .doodle-btn:hover{transform:translate(-2px,-2px) rotate(-0.5deg);box-shadow:8px 8px 0px var(--ink-black)}
 .doodle-btn:active{transform:translate(4px,4px) scale(.95) rotate(0deg)!important;box-shadow:2px 2px 0px var(--ink-black);background:#eee}
-.doodle-btn:disabled{opacity:.4;transform:none!important;box-shadow:none}
+.doodle-btn:disabled{opacity:.4;transform:none!important;box-shadow:6px 6px 0px var(--ink-black);}
 .doodle-btn.btn-wide{width:100%}
 .doodle-btn.btn-red{background:#ffecf0;color:var(--stamp-red);border-color:var(--stamp-red)}
 .doodle-btn.btn-blue{background-color:#87CEEB;color:var(--text-brown);border-color:var(--ink-black)}
@@ -159,6 +159,7 @@ body,html{
     width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3);
     border:2px solid var(--ink-black);border-radius:15px 225px 15px 255px/225px 15px 255px 15px;
     transform:rotate(0.5deg);
+    box-shadow:3px 3px 0 rgba(0,0,0,.15);
 }
 .lobby-players h3{margin-bottom:8px;transform:rotate(-.5deg)}
 .player-slot{display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px dashed #ccc;font-size:1.1rem}
@@ -172,6 +173,7 @@ body,html{
     width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3);text-align:center;
     border:2px solid var(--ink-black);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
     transform:rotate(-0.3deg);
+    box-shadow:3px 3px 0 rgba(0,0,0,.15);
 }
 .deck-selector h3{margin-bottom:10px;transform:rotate(.5deg)}
 .deck-options{display:flex;justify-content:center;gap:12px}
@@ -195,6 +197,7 @@ body,html{
     width:100%;max-width:360px;padding:12px;background:rgba(255,255,255,.3);
     border:2px solid var(--ink-black);border-radius:15px 225px 10px 225px/225px 15px 225px 15px;
     transform:rotate(0.3deg);
+    box-shadow:3px 3px 0 rgba(0,0,0,.15);
 }
 .lobby-settings h3{margin-bottom:10px;transform:rotate(-.5deg)}
 .lobby-settings.disabled{opacity:.5;pointer-events:none}
@@ -289,7 +292,7 @@ body,html{
         #d6b48d;
     border:4px dashed var(--ink-black);
     border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
-    box-shadow:inset 0 0 20px rgba(88,55,28,.12), inset 0 0 0 1px rgba(255,255,255,.2);
+    box-shadow:inset 0 0 20px rgba(88,55,28,.12), inset 0 0 0 1px rgba(255,255,255,.2), 3px 3px 0 rgba(0,0,0,.15);
     transform:rotate(-1deg);
 }
 .pool-cards-row{position:relative;width:100%;height:68px;flex-shrink:0}
@@ -636,7 +639,10 @@ body,html{
             <div style="font-size:.8rem;color:#888;">房间号</div>
             <div class="lobby-room-code" id="lobby-room-code">----</div>
         </div>
-        <div id="lobby-qr"></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div id="lobby-qr"></div>
+            <button id="btn-share-room" class="doodle-btn btn-sm" style="padding:4px 12px; font-size:0.85rem; box-shadow:2px 2px 0 var(--ink-black); transform:rotate(1deg);">🔗 分享链接</button>
+        </div>
     </div>
     <div class="lobby-players sketch-border-alt" id="lobby-players-box">
         <h3>👥 玩家 (<span id="lobby-player-count">0</span>/<span id="lobby-player-max">?</span>)</h3>
@@ -1834,6 +1840,20 @@ class App {
         $('input-room-code').addEventListener('keyup',e=>{if(e.key==='Enter')this._join();});
         $('input-name').addEventListener('keyup',e=>{if(e.key==='Enter')$('btn-create').focus();});
         $('btn-start').onclick=()=>this.game?.sendStartGame();
+        $('btn-share-room').onclick=()=>{
+            const code=$('lobby-room-code').textContent;
+            if(code==='----')return;
+            const url=BASE_URL+'?room='+code;
+            if(navigator.share){
+                navigator.share({
+                    title:'骗子博弈 - Liar\'s Gambit',
+                    text:'快来加入我的骗子博弈房间！房间号：'+code,
+                    url:url
+                }).catch(e=>console.log('Share failed:',e));
+            }else{
+                navigator.clipboard.writeText(url).then(()=>alert('链接已复制到剪贴板！')).catch(()=>alert('复制失败，请手动复制链接：'+url));
+            }
+        };
         $('btn-play').onclick=()=>this._playCards();
         $('btn-pass').onclick=()=>this.game?.sendPass();
         $('btn-ffa-challenge').onclick=()=>this.game?.sendChallenge();
