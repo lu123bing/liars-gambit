@@ -134,6 +134,15 @@ body,html{
 .doodle-btn:nth-child(3n){transform:rotate(0.5deg)}
 .doodle-btn:hover{transform:translate(-2px,-2px) rotate(-0.5deg);box-shadow:8px 8px 0px var(--ink-black)}
 .doodle-btn:active{transform:translate(4px,4px) scale(.95) rotate(0deg)!important;box-shadow:2px 2px 0px var(--ink-black);background:#eee}
+/* Add touch feedback for mobile */
+@media (hover: none) {
+    .doodle-btn:active {
+        transform:translate(4px,4px) scale(.95) rotate(0deg)!important;
+        box-shadow:2px 2px 0px var(--ink-black);
+        background:#eee;
+        transition: none;
+    }
+}
 .doodle-btn:disabled{opacity:.4;transform:none!important;box-shadow:6px 6px 0px var(--ink-black);}
 .doodle-btn.btn-wide{width:100%}
 .doodle-btn.btn-red{background:#ffecf0;color:var(--stamp-red);border-color:var(--stamp-red)}
@@ -692,6 +701,7 @@ body,html{
     </div>
     <div class="lobby-footer">
         <button class="doodle-btn btn-blue btn-wide" id="btn-start" disabled>▶ 开始游戏!</button>
+        <button class="doodle-btn btn-red btn-wide" id="btn-leave-room" style="margin-top:12px; display:none;">🚪 退出房间</button>
         <div class="lobby-hint" id="lobby-status">等待更多玩家加入...</div>
         <div style="text-align:center;font-size:.75rem;color:#b0a080;margin-top:6px;">⚠️ 请勿熄屏或切后台，否则可能断联</div>
     </div>
@@ -1337,6 +1347,16 @@ class GameEngine {
             this.fullState.showPlayLog=!!d.value;
             this._broadcastState();
         });
+        n.on('KICK_PLAYER',(d,from)=>{
+            if(!n.isHost||!this.fullState)return;
+            const p=this._pById(d.playerId);
+            if(p){
+                this.net.send(p.peerId,{type:'KICKED'});
+                this.fullState.players=this.fullState.players.filter(x=>x.id!==d.playerId);
+                this._log(`${p.name} 被踢出房间`);
+                this._broadcastState();
+            }
+        });
         n.on('START_GAME',()=>{if(n.isHost)this._startGame();});
         n.on('PLAY_AGAIN',()=>{if(n.isHost)this._startGame();});
         n.on('SKIP_DC_WAIT',()=>{if(n.isHost)this.hostContinueDc();});
@@ -1353,6 +1373,10 @@ class GameEngine {
         n.on('PLAYER_DC',d=>{if(this.onPlayerDC)this.onPlayerDC(d);});
         n.on('PLAYER_RC',d=>{if(this.onPlayerRC)this.onPlayerRC(d);});
         n.on('DC_CONTINUE',()=>{if(this.onDCContinue)this.onDCContinue();});
+        n.on('KICKED',()=>{
+            alert('你已被房主踢出房间');
+            location.reload();
+        });
     }
 
     // ─── HOST: Init lobby ───
@@ -1840,6 +1864,7 @@ class App {
         $('input-room-code').addEventListener('keyup',e=>{if(e.key==='Enter')this._join();});
         $('input-name').addEventListener('keyup',e=>{if(e.key==='Enter')$('btn-create').focus();});
         $('btn-start').onclick=()=>this.game?.sendStartGame();
+        $('btn-leave-room').onclick=()=>location.reload();
         $('btn-share-room').onclick=()=>{
             const code=$('lobby-room-code').textContent;
             if(code==='----')return;
@@ -1864,6 +1889,14 @@ class App {
         if(sn)$('input-name').value=sn;
         this._applyRemoteOnlineToggleUI();
         this._applyCustomTurnUI();
+    }
+
+    kickPlayer(playerId){
+        if(this.game && this.net && this.net.isHost){
+            if(confirm('确定要踢出该玩家吗？')){
+                this.net.broadcastAndSelf({type:'KICK_PLAYER', playerId});
+            }
+        }
     }
 
     _applyRemoteOnlineToggleUI(){
@@ -2033,6 +2066,7 @@ class App {
         $('deck-selector').classList.toggle('disabled',!isHost);
         $('lobby-settings')?.classList.toggle('disabled',!isHost);
         $('btn-start').style.display=isHost?'':'none';
+        $('btn-leave-room').style.display=isHost?'none':'';
         $('lobby-status').textContent=isHost?'等待玩家加入后开始':'等待房主开始游戏...';
     }
 
@@ -2044,7 +2078,11 @@ class App {
         let h='';
         for(const p of ps){
             const isH=p.joinOrder===0, isMe=p.id===this.game.myPlayerId;
-            h+=`<div class="player-slot"><div class="player-dot ${p.connected?'':'offline'}"></div><span>${p.name}${isMe?' (我)':''}</span>${isH?'<span class="player-host-badge">房主</span>':''}</div>`;
+            let kickBtn='';
+            if(this.net.isHost && !isMe){
+                kickBtn=`<button class="doodle-btn btn-sm btn-red" style="padding:2px 6px; font-size:0.7rem; margin-left:auto;" onclick="app.kickPlayer('${p.id}')">踢出</button>`;
+            }
+            h+=`<div class="player-slot"><div class="player-dot ${p.connected?'':'offline'}"></div><span>${p.name}${isMe?' (我)':''}</span>${isH?'<span class="player-host-badge">房主</span>':''}${kickBtn}</div>`;
         }
         $('lobby-player-list').innerHTML=h;
         const cpp=Math.floor((state.deckCount*54)/Math.max(ps.length,1));
