@@ -644,9 +644,15 @@
             $('challenge-title').textContent=d.isLiar?'🎯 抓到骗子了！':'❌ 质疑失败！';
             $('challenge-detail').textContent=`${d.challengerName} 质疑了 ${d.targetName}`;
             let h='<div style="font-size:.85rem;color:#888;margin-bottom:6px;">翻开的牌 (声称是 '+d.declaredRank+'):</div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;">';
+            let hasJoker = false;
             for(const c of d.cards){
                 const match=c.rank===d.declaredRank||c.isJoker;
-                h+=cardToHTML(c,'card-sm');
+                if(c.isJoker) hasJoker = true;
+                if (c.isJoker && !d.isLiar) {
+                    h += `<div class="card-sm joker-shake" style="font-size: 40px; display: inline-flex; align-items: center; justify-content: center; background: white; border: 1px solid #333; border-radius: 4px; width: 40px; height: 60px; margin: 0 2px; vertical-align: top;">🃏</div>`;
+                } else {
+                    h += cardToHTML(c, 'card-sm');
+                }
             }
             h+='</div>';
             $('challenge-reveal-cards').innerHTML=h;
@@ -654,6 +660,11 @@
             $('challenge-verdict').style.color=d.isLiar?'#2E7D32':'var(--stamp-red)';
             $('challenge-penalty').textContent=`${d.loserName} 收走 ${d.totalCards||'所有'} 张牌`;
             $('overlay-challenge').classList.add('active');
+            
+            if (!d.isLiar && hasJoker) {
+                try{SFX.joker();}catch(e){}
+            }
+            
             this._chDismissTimer=setTimeout(()=>$('overlay-challenge').classList.remove('active'),6000);
         }
 
@@ -669,6 +680,8 @@
             ol.querySelector('.dc-pause-text').textContent=`玩家 ${d.playerName} 断线了，等待重连中…`;
             const btn=ol.querySelector('.dc-pause-btn');
             btn.style.display=this.net&&this.net.isHost?'inline-block':'none';
+            const rcSpan = ol.querySelector('#dc-pause-room-code');
+            if(rcSpan) rcSpan.textContent = this.net ? this.net.roomCode : '';
             ol.classList.add('active');
         }
         _hideDcPause(d){
@@ -686,6 +699,9 @@
 
         // ─── Game over ───
         _onGameOver(d){
+            if(d.isFirstWinner) {
+                this._triggerFireworks();
+            }
             if(d.isFinal){
                 // True end of game — show result screen
                 setTimeout(()=>{
@@ -704,6 +720,51 @@
                 } else {
                     showToast(`🏆 ${d.winnerName} 获胜！剩余 ${d.remainCount} 人继续`,3000);
                 }
+            }
+        }
+
+        _triggerFireworks() {
+            try{SFX.laugh();}catch(e){}
+            const suits = ['♥️', '♦️', '♠️', '♣️', '🃏'];
+            const colors = ['#e53935', '#e53935', '#1e1e1e', '#1e1e1e', '#8e24aa'];
+            for (let i = 0; i < 40; i++) {
+                const fw = document.createElement('div');
+                fw.className = 'suit-firework';
+                const suitIdx = Math.floor(Math.random() * suits.length);
+                fw.textContent = suits[suitIdx];
+                fw.style.color = colors[suitIdx];
+                
+                // Randomize trajectory
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 100 + Math.random() * 300;
+                const txMid = Math.cos(angle) * velocity;
+                const tyMid = Math.sin(angle) * velocity - 150; // initial upward burst
+                
+                const txEnd = txMid + (Math.random() - 0.5) * 100;
+                const tyEnd = tyMid + 400 + Math.random() * 200; // gravity fall
+                
+                const rotMid = (Math.random() - 0.5) * 360;
+                const rotEnd = rotMid + (Math.random() - 0.5) * 720;
+                
+                const scale = 0.8 + Math.random() * 1.2;
+                
+                fw.style.setProperty('--tx-mid', `${txMid}px`);
+                fw.style.setProperty('--ty-mid', `${tyMid}px`);
+                fw.style.setProperty('--tx-end', `${txEnd}px`);
+                fw.style.setProperty('--ty-end', `${tyEnd}px`);
+                fw.style.setProperty('--rot-mid', `${rotMid}deg`);
+                fw.style.setProperty('--rot-end', `${rotEnd}deg`);
+                fw.style.setProperty('--scale', `${scale}`);
+                
+                // Randomize animation duration slightly
+                fw.style.animationDuration = `${1.2 + Math.random() * 0.8}s`;
+                
+                document.body.appendChild(fw);
+                
+                // Cleanup
+                setTimeout(() => {
+                    if (fw.parentNode) fw.parentNode.removeChild(fw);
+                }, 2500);
             }
         }
 

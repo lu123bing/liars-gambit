@@ -631,3 +631,64 @@ body,html{
 .rules-close-btn{
     display:block;margin:16px auto 0;padding:10px 32px;
 }
+
+@keyframes joker-shake {
+    0% { transform: scale(1) rotate(0deg); }
+    10% { transform: scale(1.5) rotate(-15deg); }
+    20% { transform: scale(1.5) rotate(15deg); }
+    30% { transform: scale(1.5) rotate(-15deg); }
+    40% { transform: scale(1.5) rotate(15deg); }
+    50% { transform: scale(1.5) rotate(-15deg); }
+    60% { transform: scale(1.5) rotate(15deg); }
+    70% { transform: scale(1.5) rotate(-15deg); }
+    80% { transform: scale(1.5) rotate(15deg); }
+    90% { transform: scale(1.5) rotate(-15deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+.joker-shake {
+    animation: joker-shake 1.5s ease-in-out;
+    z-index: 100;
+    position: relative;
+}
+
+/* Suit Fireworks Animation */
+.suit-firework {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    font-size: 2rem;
+    pointer-events: none;
+    z-index: 9999;
+    animation: firework-explode 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+@keyframes firework-explode {
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(var(--rot));
+        opacity: 0;
+    }
+}
+
+@keyframes firework-explode {
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    40% {
+        transform: translate(var(--tx-mid), var(--ty-mid)) scale(var(--scale)) rotate(var(--rot-mid));
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--tx-end), var(--ty-end)) scale(var(--scale)) rotate(var(--rot-end));
+        opacity: 0;
+    }
+}

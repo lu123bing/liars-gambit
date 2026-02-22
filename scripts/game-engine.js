@@ -513,13 +513,13 @@
             if(remaining.length<=1){
                 // True game over
                 fs.phase='GAME_OVER'; fs.seq++;
-                this.net.broadcastAndSelf({type:'GAME_OVER',winnerId:winner.id,winnerName:winner.name,isFinal:true,winners:fs.winners.map(wid=>{const wp=this._pById(wid);return wp?wp.name:'?';})});
+                this.net.broadcastAndSelf({type:'GAME_OVER',winnerId:winner.id,winnerName:winner.name,isFinal:true,isFirstWinner:fs.winners.length===1,winners:fs.winners.map(wid=>{const wp=this._pById(wid);return wp?wp.name:'?';})});
                 this._broadcastState();
                 return;
             }
 
             // Winner exits the round, game continues for rest
-            this.net.broadcastAndSelf({type:'GAME_OVER',winnerId:winner.id,winnerName:winner.name,isFinal:false,remainCount:remaining.length});
+            this.net.broadcastAndSelf({type:'GAME_OVER',winnerId:winner.id,winnerName:winner.name,isFinal:false,isFirstWinner:fs.winners.length===1,remainCount:remaining.length});
 
             // Clear table, start new round
             fs.tableCards=[]; fs.tablePlayLog=[];
