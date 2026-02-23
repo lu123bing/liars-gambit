@@ -4,7 +4,46 @@
             this.net=null; this.game=null; this.selectedCards=new Set();
             this.selectedDeckCount=1; this.selectedRank=null;
             this.selectedChallengeMode='sequential';
+            this._prevPhase=null;
+            this._poolSfxRound=0;
+            this._poolSfxPrevCount=0;
+            this._poolSfxTriggeredBase=false;
+            this._poolSfxTriggeredHigh=false;
             this._bindHome(); this._initRankGrid(); this._checkUrlParams();
+        }
+
+        _resetPoolSfxRound(count=0){
+            this._poolSfxRound++;
+            this._poolSfxPrevCount=count;
+            this._poolSfxTriggeredBase=false;
+            this._poolSfxTriggeredHigh=false;
+        }
+
+        _maybePlayPoolOverflowSfx(state){
+            const ct=state?.tableCardCount||0;
+            if(this._poolSfxRound===0){
+                this._resetPoolSfxRound(ct);
+                return;
+            }
+            const deckCount=Math.max(1,state?.deckCount||1);
+            const baseLimit=deckCount*4;
+            const highLimit=baseLimit*1.5;
+            const prev=this._poolSfxPrevCount;
+
+            const crossedBase=(!this._poolSfxTriggeredBase)&&(prev<=baseLimit)&&(ct>baseLimit);
+            const crossedHigh=(!this._poolSfxTriggeredHigh)&&(prev<=highLimit)&&(ct>highLimit);
+
+            if(crossedHigh){
+                // 冲突时优先高阈值音效
+                try{SFX.laugh2();}catch(e){}
+                this._poolSfxTriggeredHigh=true;
+                this._poolSfxTriggeredBase=true;
+            }else if(crossedBase){
+                try{SFX.shortjokerlaugh();}catch(e){}
+                this._poolSfxTriggeredBase=true;
+            }
+
+            this._poolSfxPrevCount=ct;
         }
 
         // ─── Home ───
@@ -288,10 +327,20 @@
         }
 
         _onState(state){
+            const prevPhase=this._prevPhase;
+            // 新一轮（宣言阶段）重置触发器：每个宣言对应出牌周期只触发一次
+            if(state.phase==='DECLARING'&&prevPhase!=='DECLARING'){
+                this._resetPoolSfxRound(state.tableCardCount||0);
+            }
+
             if(state.phase==='LOBBY'){
+                this._poolSfxPrevCount=0;
+                this._poolSfxTriggeredBase=false;
+                this._poolSfxTriggeredHigh=false;
                 this._updateLobby(state);
                 const active=$$('.screen.active')[0]?.id;
                 if(!active||active==='screen-home')showScreen('lobby');
+                this._prevPhase=state.phase;
                 return;
             }
             if(state.phase!=='GAME_OVER'){
@@ -301,7 +350,13 @@
                     try{SFX.cardmixing();}catch(e){} // dealing sound on game start
                 }
             }
+
+            if(state.phase==='TURN'){
+                this._maybePlayPoolOverflowSfx(state);
+            }
+
             this._renderGame(state);
+            this._prevPhase=state.phase;
         }
 
         _renderGame(s){
@@ -864,6 +919,11 @@
         _backHome(){
             if(this.net){this.net.destroy();this.net=null;}
             this.game=null; this.selectedCards.clear();
+            this._prevPhase=null;
+            this._poolSfxRound=0;
+            this._poolSfxPrevCount=0;
+            this._poolSfxTriggeredBase=false;
+            this._poolSfxTriggeredHigh=false;
             $('btn-ffa-challenge').classList.remove('visible');
             $('overlay-challenge').classList.remove('active');
             $('overlay-liar').classList.remove('active');

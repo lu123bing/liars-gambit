@@ -1,6 +1,8 @@
 *.mp3
 sound.html
-test.html
+*test.html
 TECH*.md
 *copy*.html
 *base64.txt
+sound_effect/
+*txt
