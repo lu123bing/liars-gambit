@@ -26,7 +26,7 @@
                 return;
             }
             const deckCount=Math.max(1,state?.deckCount||1);
-            const baseLimit=deckCount*4;
+            const baseLimit=deckCount*4+1;
             const highLimit=baseLimit*1.5;
             const prev=this._poolSfxPrevCount;
 
