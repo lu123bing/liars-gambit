@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>骗子博弈 - Liar's Gambit</title>
     <!-- Asset cache-busting version: bump this on each deployment -->
-    <meta name="asset-version" content="2026.02.22.1">
+    <meta name="asset-version" content="2026.02.23.2">
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=ZCOOL+KuaiLe&family=Pangolin&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles/main.css?v=2026.02.22.1">
+    <link rel="stylesheet" href="./styles/main.css?v=2026.02.23.2">
 </head>
 <body>
 
@@ -164,6 +164,7 @@
     <div class="hand-area" id="hand-area"></div>
     <div class="log-divider" aria-hidden="true"></div>
     <div class="game-log" id="game-log"></div>
+    <div class="hand-stats sketch-border" id="hand-stats"></div>
 </div>
 
 <!-- FFA challenge button -->
@@ -183,7 +184,7 @@
 <div class="modal-overlay" id="modal-declare">
     <div class="modal-box sketch-border">
         <h2>📢 庄家宣言</h2>
-        <p style="text-align:center;font-size:.9rem;color:#888;margin-bottom:12px;">选择本轮的目标数字</p>
+        <p style="text-align:center;font-size:.9rem;color:#888;margin-bottom:12px;">你是庄家,请指定本轮目标数字</p>
         <div class="rank-grid" id="rank-grid"></div>
         <button class="doodle-btn btn-blue btn-wide" id="btn-declare-confirm" disabled>确认宣言!</button>
         <div class="declare-hand-preview">
@@ -222,6 +223,10 @@
     <div class="dc-pause-text" id="dc-pause-text">玩家断联了</div>
     <div class="dc-pause-sub" id="dc-pause-sub">等待重连中...</div>
     <div class="dc-pause-room" id="dc-pause-room" style="margin-top: 10px; font-size: 1.2rem; font-weight: bold;">房间号: <span id="dc-pause-room-code"></span></div>
+    <div class="dc-pause-qr-wrap">
+        <div id="dc-pause-qr"></div>
+        <div class="dc-pause-qr-tip">扫码加入同房间（使用相同名字可尝试恢复）</div>
+    </div>
     <div class="spinner"></div>
     <button class="doodle-btn btn-red dc-pause-btn" id="btn-dc-continue" style="display:none" onclick="app.dismissDcPause()">跳过等待，继续游戏</button>
 </div>
@@ -292,7 +297,7 @@
         <button class="doodle-btn btn-blue rules-close-btn" onclick="document.getElementById('modal-rules').classList.remove('active')">我懂了！</button>
         <div style="text-align:center;font-size:.75rem;color:#b0a080;margin-top:8px;">⚠️ 游戏过程中请勿熄屏或切后台</div>
         <div style="text-align:center;font-size:.78rem;color:#8d7b5a;margin-top:8px;line-height:1.5;">
-            原 GitHub 网页：<a href="https://lu123bing.github.io/liars-gambit/" target="_blank" rel="noopener noreferrer">https://lu123bing.github.io/liars-gambit/</a><br>
+            原 GitHub 网页：<a href="https://github.com/lu123bing/liars-gambit" target="_blank" rel="noopener noreferrer">https://github.com/lu123bing/liars-gambit</a><br>
             有其他问题，详情见原网页。
         </div>
     </div>
@@ -301,12 +306,12 @@
 <!-- ═══════════ CDN SCRIPTS ═══════════ -->
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="./scripts/runtime-config.js?v=2026.02.22.1"></script>
-<script src="./scripts/runtime-utils.js?v=2026.02.22.1"></script>
-<script src="./scripts/card-engine.js?v=2026.02.22.1"></script>
-<script src="./scripts/network-manager.js?v=2026.02.22.1"></script>
-<script src="./scripts/game-engine.js?v=2026.02.22.1"></script>
-<script src="./scripts/app-controller.js?v=2026.02.22.1"></script>
+<script src="./scripts/runtime-config.js?v=2026.02.23.2"></script>
+<script src="./scripts/runtime-utils.js?v=2026.02.23.2"></script>
+<script src="./scripts/card-engine.js?v=2026.02.23.2"></script>
+<script src="./scripts/network-manager.js?v=2026.02.23.2"></script>
+<script src="./scripts/game-engine.js?v=2026.02.23.2"></script>
+<script src="./scripts/app-controller.js?v=2026.02.23.2"></script>
 
 <script>
 /* ═══════════════════════════════════════════════════════════════

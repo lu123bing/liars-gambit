@@ -14,19 +14,11 @@
             this.onStateUpdate=null; this.onHandUpdate=null;
             this.onChallengeResult=null; this.onGameOver=null;
             this.onLog=null; this.onRequestDeclare=null;
-            this.onRequestRoundContinue=null;
             this._challengeWindowTimer=null;
             this._challengeRoundId=0;
             this._challengeCandidates=[];
-            this._roundDecisionTimer=null;
 
             this._bind();
-        }
-        _clearRoundDecisionTimer(){
-            if(this._roundDecisionTimer){
-                clearTimeout(this._roundDecisionTimer);
-                this._roundDecisionTimer=null;
-            }
         }
         _resetChallengeWindow(){
             if(this._challengeWindowTimer){
@@ -75,7 +67,6 @@
             n.on('PLAY_CARDS',(d,from)=>{if(n.isHost)this._onPlayCards(d,from);});
             n.on('PASS',(d,from)=>{if(n.isHost)this._onPass(d,from);});
             n.on('CHALLENGE',(d,from)=>{if(n.isHost)this._onChallenge(d,from);});
-            n.on('ROUND_CONTINUE_DECISION',(d,from)=>{if(n.isHost)this._onRoundContinueDecision(d,from);});
             n.on('DECK_COUNT',(d,from)=>{
                 if(!n.isHost||!this.fullState)return;
                 this.fullState.deckCount=Math.max(1,Math.min(3,d.count));
@@ -114,7 +105,6 @@
             n.on('LOG',d=>{if(this.onLog)this.onLog(d.message,d.important,d.isPlayInfo);});
             n.on('LOG_CLEAR',()=>{if(this.onLogClear)this.onLogClear();});
             n.on('REQUEST_DECLARE',()=>{if(this.onRequestDeclare)this.onRequestDeclare();});
-            n.on('REQUEST_ROUND_CONTINUE',d=>{if(this.onRequestRoundContinue)this.onRequestRoundContinue(d);});
             n.on('PLAYER_DC',d=>{if(this.onPlayerDC)this.onPlayerDC(d);});
             n.on('PLAYER_RC',d=>{if(this.onPlayerRC)this.onPlayerRC(d);});
             n.on('DC_CONTINUE',()=>{if(this.onDCContinue)this.onDCContinue();});
@@ -137,8 +127,7 @@
                 declaredRank:null, challengeMode:'sequential',
                 tableCards:[], tablePlayLog:[], lastPlayerId:null, lastPlayCount:0,
                 passCount:0, deckCount, discardPile:[], seq:0, showPlayLog:true,
-                maxPlayers:_getRoomMaxPlayers(),
-                pendingContinuePlayerId:null
+                maxPlayers:_getRoomMaxPlayers()
             };
             this._addPlayer(this.myPlayerId,this.myName,this.net.myPeerId);
             this._broadcastState();
@@ -209,7 +198,6 @@
 
             fs.phase='DECLARING'; fs.tableCards=[]; fs.tablePlayLog=[]; fs.discardPile=[];
             fs.lastPlayerId=null; fs.lastPlayCount=0; fs.passCount=0;
-            fs.pendingContinuePlayerId=null;
             fs.winners=[];
             fs.dealerIndex=rng(0,fs.players.length-1);
             // Make sure dealer is connected
@@ -299,7 +287,7 @@
             this._log(`${p.name} 跳过了`,false,true);
 
             const active=fs.players.filter(p=>p.connected&&!(fs.winners||[]).includes(p.id));
-            if(fs.lastPlayerId && fs.passCount>=active.length-1){
+            if(fs.lastPlayerId && fs.passCount>=active.length){
                 this._roundEnd();
             } else {
                 this._advanceTurn();
@@ -336,85 +324,6 @@
                 clientTs:typeof d.clientTs==='number'?d.clientTs:null,
                 hostRecvTs:Date.now()
             });
-        }
-
-        _onRoundContinueDecision(d,from){
-            const fs=this.fullState;
-            if(!fs||fs.phase!=='ROUND_DECISION')return;
-            const p=this._pByPeer(from);
-            if(!p||p.id!==fs.pendingContinuePlayerId)return;
-            this._clearRoundDecisionTimer();
-            this._applyRoundContinueDecision(!!d.continueRound);
-        }
-
-        _requestRoundContinueDecision(last,lastIdx){
-            const fs=this.fullState;
-            this._clearRoundDecisionTimer();
-            fs.phase='ROUND_DECISION';
-            fs.currentPlayerIndex=lastIdx;
-            fs.dealerIndex=lastIdx;
-            fs.pendingContinuePlayerId=last.id;
-            fs.seq++;
-            this._broadcastState();
-
-            const payload={
-                type:'REQUEST_ROUND_CONTINUE',
-                declaredRank:fs.declaredRank,
-                tableCardCount:fs.tableCards.length
-            };
-            if(last.peerId===this.net.myPeerId){
-                if(this.onRequestRoundContinue)this.onRequestRoundContinue(payload);
-            }else{
-                this.net.send(last.peerId,payload);
-            }
-
-            this._roundDecisionTimer=setTimeout(()=>{
-                if(this.fullState&&this.fullState.phase==='ROUND_DECISION'&&this.fullState.pendingContinuePlayerId===last.id){
-                    this._applyRoundContinueDecision(false);
-                }
-            },12000);
-        }
-
-        _applyRoundContinueDecision(continueRound){
-            const fs=this.fullState;
-            if(!fs||fs.phase!=='ROUND_DECISION')return;
-            const last=this._pById(fs.pendingContinuePlayerId);
-            this._clearRoundDecisionTimer();
-            fs.pendingContinuePlayerId=null;
-            if(!last){
-                fs.phase='TURN';
-                fs.seq++;
-                this._broadcastState();
-                return;
-            }
-
-            if(continueRound){
-                fs.phase='TURN';
-                fs.currentPlayerIndex=fs.players.indexOf(last);
-                fs.passCount=0;
-                fs.seq++;
-                this._log(`${last.name} 选择继续沿用宣言【${fs.declaredRank}】，牌池保留并继续累计`);
-                this._broadcastState();
-                return;
-            }
-
-            fs.discardPile.push(...fs.tableCards);
-            this._log(`所有人都跳过了，${fs.tableCards.length} 张牌进入弃牌堆`);
-
-            let lastIdx=fs.players.indexOf(last);
-            fs.tableCards=[]; fs.tablePlayLog=[];
-            fs.lastPlayerId=null; fs.lastPlayCount=0; fs.passCount=0;
-            if((fs.winners||[]).includes(last.id)){
-                const rem=fs.players.filter(p=>p.connected&&p.handCount>0&&!(fs.winners||[]).includes(p.id));
-                if(rem.length>0) lastIdx=fs.players.indexOf(rem[0]);
-            }
-            fs.dealerIndex=lastIdx; fs.currentPlayerIndex=lastIdx;
-            fs.phase='DECLARING'; fs.declaredRank=null; fs.seq++;
-
-            const newDealer=fs.players[lastIdx];
-            this._broadcastState();
-            if(newDealer.peerId===this.net.myPeerId){if(this.onRequestDeclare)this.onRequestDeclare();}
-            else this.net.send(newDealer.peerId,{type:'REQUEST_DECLARE'});
         }
 
         _resolveChallenge(challenger,meta={}){
@@ -497,7 +406,27 @@
                 this._broadcastState();
                 return;
             }
-            this._requestRoundContinueDecision(last,fs.players.indexOf(last));
+
+            fs.discardPile.push(...fs.tableCards);
+            this._log(`所有人都跳过了，${fs.tableCards.length} 张牌进入弃牌堆`);
+
+            let lastIdx=fs.players.indexOf(last);
+            fs.tableCards=[]; fs.tablePlayLog=[];
+            fs.lastPlayerId=null; fs.lastPlayCount=0; fs.passCount=0;
+
+            // 若最后出牌者已获胜，则顺延到下一位仍在对局中的玩家
+            if((fs.winners||[]).includes(last.id) || !last.connected || last.handCount<=0){
+                const rem=fs.players.filter(p=>p.connected&&p.handCount>0&&!(fs.winners||[]).includes(p.id));
+                if(rem.length>0) lastIdx=fs.players.indexOf(rem[0]);
+            }
+
+            fs.dealerIndex=lastIdx; fs.currentPlayerIndex=lastIdx;
+            fs.phase='DECLARING'; fs.declaredRank=null; fs.seq++;
+
+            const newDealer=fs.players[lastIdx];
+            this._broadcastState();
+            if(newDealer.peerId===this.net.myPeerId){if(this.onRequestDeclare)this.onRequestDeclare();}
+            else this.net.send(newDealer.peerId,{type:'REQUEST_DECLARE'});
         }
 
         // ─── HOST: Game over (or winner continue) ───
@@ -579,8 +508,7 @@
                 maxPlayers:fs.maxPlayers||_getRoomMaxPlayers(),
                 discardCount:(fs.discardPile||[]).length, seq:fs.seq,
                 showPlayLog:fs.showPlayLog!==false,
-                winners:fs.winners||[],
-                pendingContinuePlayerId:fs.pendingContinuePlayerId||null
+                winners:fs.winners||[]
             };
             this.net.broadcastAndSelf({type:'STATE_UPDATE',state:s});
             this.net.broadcastAndSelf({type:'FULL_STATE_SYNC',fullState:JSON.parse(JSON.stringify(fs))});
@@ -653,7 +581,6 @@
         sendDeclare(rank){this.net.sendToHost({type:'DECLARE',rank});}
         sendPlayCards(ids){this.net.sendToHost({type:'PLAY_CARDS',cardIds:ids});}
         sendPass(){this.net.sendToHost({type:'PASS'});}
-        sendRoundContinueDecision(continueRound){this.net.sendToHost({type:'ROUND_CONTINUE_DECISION',continueRound:!!continueRound});}
         sendChallenge(){
             this.net.sendToHost({
                 type:'CHALLENGE',
@@ -670,6 +597,7 @@
         isMyDeclare(){if(!this.state||this.state.phase!=='DECLARING')return false;const d=this.state.players[this.state.dealerIndex];return d&&d.id===this.myPlayerId;}
         canChallenge(){
             if(!this.state||this.state.phase!=='TURN'||!this.state.lastPlayerId)return false;
+            if((this.state.winners||[]).includes(this.myPlayerId))return false;
             if(this.state.lastPlayerId===this.myPlayerId)return false;
             return this.state.challengeMode==='sequential' ? this.isMyTurn() : true;
         }

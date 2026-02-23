@@ -277,7 +277,6 @@
             this.game.onLog=(m,i,p)=>this._addLog(m,i,p);
             this.game.onLogClear=()=>{$('game-log').innerHTML='';};
             this.game.onRequestDeclare=()=>this._showDeclareModal();
-            this.game.onRequestRoundContinue=d=>this._askRoundContinue(d);
             this.game.onPlayerDC=d=>this._showDcPause(d);
             this.game.onPlayerRC=d=>this._hideDcPause(d);
             this.game.onDCContinue=()=>this._hideDcPause();
@@ -317,8 +316,6 @@
                 ti.textContent=`${dealer?.name||'?'} 正在宣言...`;
             else if(s.phase==='TURN')
                 ti.textContent=isMyTurn?'💡 轮到你了！':`等待 ${cur?.name||'?'}`;
-            else if(s.phase==='ROUND_DECISION')
-                ti.textContent=`${cur?.name||'?'} 正在决定是否续打...`;
             else if(s.phase==='RESOLVING')
                 ti.textContent='⚡ 质疑中...';
             else ti.textContent='';
@@ -422,11 +419,6 @@
             $('btn-pass').disabled=!(myTurn&&s.phase==='TURN');
         }
 
-        _askRoundContinue(d){
-            const keep=confirm(`本轮无人继续出牌。是否继续沿用宣言【${d?.declaredRank||'-'}】并在当前牌池(${d?.tableCardCount||0}张)基础上继续出牌？\n\n选择“确定”=继续续打\n选择“取消”=结束本轮并弃牌，进入新宣言`);
-            this.game?.sendRoundContinueDecision(!!keep);
-        }
-
         _updateFFA(s){
             const btn=$('btn-ffa-challenge');
             const canCh=this.game.canChallenge();
@@ -439,6 +431,7 @@
         _onHand(hand){
             this.selectedCards.clear();
             this._renderHand(hand);
+            this._renderHandStats(hand);
         }
 
         _renderHand(hand){
@@ -466,12 +459,96 @@
             this._updatePlayBtn();
         }
 
+        _renderHandStats(hand){
+            const box=$('hand-stats');
+            if(!box) return;
+            const cards=Array.isArray(hand)?hand:[];
+            const counts={};
+            for(const c of cards){
+                if(!c) continue;
+                const key=this._rankKeyOfCard(c);
+                counts[key]=(counts[key]||0)+1;
+            }
+
+            const order=[...RANKS,'🃏'];
+            const chips=order
+                .filter(k=>counts[k]>0)
+                .map(k=>`<button class="hs-chip" data-rank="${k}" data-total="${counts[k]}" onclick="app.selectCardsByRank(this.dataset.rank)"><span class="hs-rank">${k}</span><span class="hs-count">×${counts[k]}</span></button>`)
+                .join('');
+
+            box.innerHTML=`
+                <div class="hand-stats-head">
+                    <div class="hand-stats-title">🧮 手牌统计</div>
+                    <div class="hand-stats-total">总数 ${cards.length}</div>
+                </div>
+                <div class="hand-stats-grid">${chips||'<div style="font-size:.82rem;color:#8f7f6a;">暂无手牌</div>'}</div>
+            `;
+            this._updateHandStatsSelectionState();
+        }
+
         toggleCard(id){
             try{SFX.click();}catch(e){}
             if(this.selectedCards.has(id))this.selectedCards.delete(id);
             else this.selectedCards.add(id);
+            this._syncHandSelectionUI();
+        }
+
+        selectCardsByRank(rankKey){
+            const hand=this.game?.myHand;
+            if(!Array.isArray(hand)||!hand.length) return;
+
+            const rankIds=[];
+            for(const c of hand){
+                if(!c) continue;
+                if(this._rankKeyOfCard(c)===rankKey) rankIds.push(c.id);
+            }
+
+            if(!rankIds.length) return;
+            const allSelected=rankIds.every(id=>this.selectedCards.has(id));
+            if(allSelected){
+                rankIds.forEach(id=>this.selectedCards.delete(id));
+            }else{
+                rankIds.forEach(id=>this.selectedCards.add(id));
+            }
+
+            try{SFX.click();}catch(e){}
+            this._syncHandSelectionUI();
+        }
+
+        _syncHandSelectionUI(){
             $$('.hand-area .card').forEach(el=>el.classList.toggle('selected',this.selectedCards.has(el.dataset.id)));
+            this._updateHandStatsSelectionState();
             this._updatePlayBtn();
+        }
+
+        _rankKeyOfCard(card){
+            return card?.rank==='JOKER' ? '🃏' : card?.rank;
+        }
+
+        _updateHandStatsSelectionState(){
+            const chips=$$('#hand-stats .hs-chip');
+            if(!chips.length) return;
+            const hand=this.game?.myHand;
+            if(!Array.isArray(hand)||!hand.length){
+                chips.forEach(chip=>chip.classList.remove('is-selected'));
+                return;
+            }
+
+            const totalByRank={};
+            const selectedByRank={};
+            for(const c of hand){
+                if(!c) continue;
+                const key=this._rankKeyOfCard(c);
+                totalByRank[key]=(totalByRank[key]||0)+1;
+                if(this.selectedCards.has(c.id)) selectedByRank[key]=(selectedByRank[key]||0)+1;
+            }
+
+            chips.forEach(chip=>{
+                const rank=chip.dataset.rank;
+                const total=totalByRank[rank]||0;
+                const selected=selectedByRank[rank]||0;
+                chip.classList.toggle('is-selected',total>0&&selected===total);
+            });
         }
 
         _updatePlayBtn(){
@@ -681,11 +758,27 @@
             const btn=ol.querySelector('.dc-pause-btn');
             btn.style.display=this.net&&this.net.isHost?'inline-block':'none';
             const rcSpan = ol.querySelector('#dc-pause-room-code');
-            if(rcSpan) rcSpan.textContent = this.net ? this.net.roomCode : '';
+            const roomCode=this.net ? this.net.roomCode : '';
+            if(rcSpan) rcSpan.textContent = roomCode;
+            const qrEl=ol.querySelector('#dc-pause-qr');
+            if(qrEl){
+                qrEl.innerHTML='';
+                if(roomCode){
+                    try{
+                        const url=BASE_URL+'?room='+roomCode;
+                        new QRCode(qrEl,{text:url,width:112,height:112,correctLevel:QRCode.CorrectLevel.L});
+                    }catch(e){
+                        qrEl.textContent='📷';
+                    }
+                }
+            }
             ol.classList.add('active');
         }
         _hideDcPause(d){
-            $('overlay-dc-pause').classList.remove('active');
+            const ol=$('overlay-dc-pause');
+            const qrEl=ol?.querySelector('#dc-pause-qr');
+            if(qrEl) qrEl.innerHTML='';
+            ol.classList.remove('active');
         }
         dismissDcPause(){
             // Host clicks "skip waiting" → tell engine to force continue
@@ -779,6 +872,7 @@
             $('modal-declare').classList.remove('active');
             $('modal-rules').classList.remove('active');
             $('game-log').innerHTML='';
+            if($('hand-stats'))$('hand-stats').innerHTML='';
             showScreen('home');
             this._resetHomeStamp();
         }
@@ -872,8 +966,7 @@
                     seq:(oldState?.seq||0),
                     showPlayLog:oldState?.showPlayLog!==false,
                     winners:oldState?.winners||[],
-                    maxPlayers:oldState?.maxPlayers||_getRoomMaxPlayers(),
-                    pendingContinuePlayerId:oldState?.pendingContinuePlayerId||null
+                    maxPlayers:oldState?.maxPlayers||_getRoomMaxPlayers()
                 };
                 this.game.fullState=JSON.parse(JSON.stringify(fullSnapshot));
                 this.game.fullState.seq=(this.game.fullState.seq||0)+1;

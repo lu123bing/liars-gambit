@@ -54,13 +54,15 @@
     const NET_CONFIG = _readRuntimeNetConfig();
 
     function _readRemoteOnlineEnabled(){
-        try{ return localStorage.getItem(REMOTE_ONLINE_STORAGE_KEY)==='1'; }
-        catch(e){ return false; }
+        try{ localStorage.removeItem(REMOTE_ONLINE_STORAGE_KEY); }
+        catch(e){}
+        return false;
     }
 
     function _setRemoteOnlineEnabled(enabled){
         NET_CONFIG.remoteOnlineEnabled=!!enabled;
-        try{ localStorage.setItem(REMOTE_ONLINE_STORAGE_KEY,enabled?'1':'0'); }catch(e){}
+        // 不持久化远程开关，确保每次刷新默认关闭
+        try{ localStorage.removeItem(REMOTE_ONLINE_STORAGE_KEY); }catch(e){}
     }
 
     function _normalizeTurnUrls(raw){
