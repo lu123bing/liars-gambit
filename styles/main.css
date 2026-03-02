@@ -355,10 +355,97 @@ body,html{
     box-shadow:inset 0 0 20px rgba(88,55,28,.12), inset 0 0 0 1px rgba(255,255,255,.2), 3px 3px 0 rgba(0,0,0,.15);
     transform:rotate(-1deg);
 }
-.pool-cards-row{position:relative;width:100%;height:68px;flex-shrink:0}
-.pool-card{position:absolute}
+.pool-cards-row{position:relative;width:100%;height:86px;flex-shrink:0}
+.pool-cards-row .pool-card{position:absolute}
 .pool-count{font-weight:900;font-size:1.4rem;text-align:center;color:#3A2800;text-shadow:0 1px 0 rgba(255,255,255,.3);line-height:1.1;position:relative;z-index:2}
 .pool-last-play{font-size:1.2rem;color:#372714;text-align:center;text-shadow:0 1px 0 rgba(255,255,255,.2);position:relative;z-index:2}
+
+/* Pool pressure animations (base/high) — absurd sketch comic style with fire pulsing & scaling */
+@keyframes pool-sketch-jitter-base{
+    0%{
+        transform: rotate(-1deg) scale(1);
+        box-shadow: inset 0 0 15px rgba(220,50,20,0.3), 0 0 15px rgba(255,80,0,0.4), 3px 3px 0 rgba(0,0,0,.15);
+        border-color: rgba(180,40,20,0.8);
+    }
+    33%{
+        transform: rotate(-0.2deg) scale(1.025);
+        box-shadow: inset 0 0 25px rgba(255,60,20,0.5), 0 0 25px rgba(255,120,0,0.6), 3px 3px 0 rgba(0,0,0,.15);
+        border-color: rgba(220,50,20,0.9);
+    }
+    66%{
+        transform: rotate(-1.5deg) scale(0.99);
+        box-shadow: inset 0 0 20px rgba(200,40,20,0.4), 0 0 18px rgba(230,90,0,0.5), 3px 3px 0 rgba(0,0,0,.15);
+        border-color: rgba(200,30,10,0.8);
+    }
+    100%{
+        transform: rotate(-0.8deg) scale(1.015);
+        box-shadow: inset 0 0 30px rgba(255,70,20,0.6), 0 0 30px rgba(255,140,0,0.7), 3px 3px 0 rgba(0,0,0,.15);
+        border-color: rgba(240,60,20,1);
+    }
+}
+@keyframes pool-sketch-jitter-high{
+    0%{
+        transform: rotate(-1deg) scale(1.02);
+        box-shadow: inset 0 0 30px rgba(255,30,0,0.6), 0 0 30px rgba(255,70,0,0.6), 3px 3px 0 rgba(0,0,0,.15);
+        border-color: rgba(255,20,0,0.9);
+    }
+    25%{
+        transform: rotate(0.5deg) scale(1.06);
+        box-shadow: inset 0 0 50px rgba(255,40,0,0.8), 0 0 45px rgba(255,100,0,0.8), 3px 3px 0 rgba(0,0,0,.15);
+        border-color: rgba(255,50,0,1);
+    }
+    50%{
+        transform: rotate(-2.5deg) scale(0.97);
+        box-shadow: inset 0 0 40px rgba(230,20,0,0.7), 0 0 35px rgba(240,60,0,0.7), 3px 3px 0 rgba(0,0,0,.15);
+        border-color: rgba(220,10,0,0.9);
+    }
+    75%{
+        transform: rotate(1.5deg) scale(1.08); /* 强化放大感 */
+        box-shadow: inset 0 0 60px rgba(255,60,0,0.9), 0 0 55px rgba(255,150,0,0.9), 3px 3px 0 rgba(0,0,0,.15);
+        border-color: rgb(255, 78, 24);
+    }
+    100%{
+        transform: rotate(-0.5deg) scale(1.04);
+        box-shadow: inset 0 0 45px rgba(255,30,0,0.7), 0 0 40px rgba(255,80,0,0.8), 3px 3px 0 rgba(0,0,0,.15);
+        border-color: rgba(255,40,0,1);
+    }
+}
+@keyframes pool-bomb-burst-base{
+    0% { transform: rotate(-1deg) scale(1); box-shadow: inset 0 0 20px rgba(220,50,20,.4), 0 0 15px rgba(255,80,0,.5); }
+    40% { transform: rotate(-0.5deg) scale(1.15); box-shadow: inset 0 0 40px rgba(255,40,20,.7), 0 0 50px rgba(255,100,0,.8), 0 0 0 4px rgba(255,120,40,0.6); border-color:#ff4500; }
+    100% { transform: rotate(-1deg) scale(1); box-shadow: inset 0 0 20px rgba(220,50,20,.4), 0 0 15px rgba(255,80,0,.5); }
+}
+@keyframes pool-bomb-burst-high{
+    0% { transform: rotate(-1.5deg) scale(1.02); box-shadow: inset 0 0 40px rgba(255,30,0,.6), 0 0 30px rgba(255,60,0,.7); }
+    30% { transform: rotate(1deg) scale(1.25); box-shadow: inset 0 0 80px rgba(255,0,0,.9), 0 0 90px rgba(255,120,0,1), 0 0 0 6px rgba(255,80,0,0.7); border-color:#ff1100; }
+    70% { transform: rotate(-2deg) scale(0.96); box-shadow: inset 0 0 40px rgba(220,0,0,.7), 0 0 35px rgba(220,50,0,.7); }
+    100% { transform: rotate(-1deg) scale(1.03); box-shadow: inset 0 0 50px rgba(255,40,0,.6), 0 0 45px rgba(255,80,0,.8); }
+}
+@keyframes pool-card-rattle-base{
+    0%,100%{translate:0 0}
+    50%{translate:0 -0.5px}
+}
+@keyframes pool-card-rattle-high{
+    0%,100%{translate:0 0}
+    33%{translate:0.8px -0.6px}
+    66%{translate:-0.8px 0.6px}
+}
+
+.card-pool.pool-pressure-base{
+    animation:pool-sketch-jitter-base 1.2s infinite alternate ease-in-out;
+}
+.card-pool.pool-pressure-high{
+    animation:pool-sketch-jitter-high 0.8s infinite alternate ease-in-out;
+}
+.card-pool.pool-pressure-burst-base{
+    animation:pool-bomb-burst-base .5s ease-out;
+}
+.card-pool.pool-pressure-burst-high{
+    animation:pool-bomb-burst-high .65s ease-out;
+}
+
+.card-pool.pool-pressure-base .pool-card{animation:pool-card-rattle-base 0.6s infinite alternate;}
+.card-pool.pool-pressure-high .pool-card{animation:pool-card-rattle-high 0.4s infinite alternate;}
 
 /* Opponent action pulse */
 @keyframes opp-pulse {

@@ -9,7 +9,56 @@
             this._poolSfxPrevCount=0;
             this._poolSfxTriggeredBase=false;
             this._poolSfxTriggeredHigh=false;
+            this._poolPressureLevel='none';
+            this._poolVisualPrevCount=0;
+            this._poolPressureBurstTimer=null;
             this._bindHome(); this._initRankGrid(); this._checkUrlParams();
+        }
+
+        _applyPoolPressureVisual(){
+            const pool=document.querySelector('.card-pool');
+            if(!pool) return;
+            pool.classList.remove('pool-pressure-base','pool-pressure-high');
+            if(this._poolPressureLevel==='base') pool.classList.add('pool-pressure-base');
+            else if(this._poolPressureLevel==='high') pool.classList.add('pool-pressure-high');
+        }
+
+        _pulsePoolPressure(level){
+            const pool=document.querySelector('.card-pool');
+            if(!pool) return;
+            const pulseCls=level==='high'?'pool-pressure-burst-high':'pool-pressure-burst-base';
+            if(this._poolPressureBurstTimer){
+                clearTimeout(this._poolPressureBurstTimer);
+                this._poolPressureBurstTimer=null;
+            }
+            pool.classList.remove('pool-pressure-burst-base','pool-pressure-burst-high');
+            void pool.offsetWidth;
+            pool.classList.add(pulseCls);
+            this._poolPressureBurstTimer=setTimeout(()=>{
+                pool.classList.remove('pool-pressure-burst-base','pool-pressure-burst-high');
+                this._poolPressureBurstTimer=null;
+            },700);
+        }
+
+        _setPoolPressure(level){
+            if(level!=='base'&&level!=='high') return;
+            if(level==='high'||this._poolPressureLevel==='none'){
+                this._poolPressureLevel=level;
+            }
+            this._applyPoolPressureVisual();
+            this._pulsePoolPressure(level);
+        }
+
+        _clearPoolPressure(){
+            this._poolPressureLevel='none';
+            if(this._poolPressureBurstTimer){
+                clearTimeout(this._poolPressureBurstTimer);
+                this._poolPressureBurstTimer=null;
+            }
+            const pool=document.querySelector('.card-pool');
+            if(pool){
+                pool.classList.remove('pool-pressure-base','pool-pressure-high','pool-pressure-burst-base','pool-pressure-burst-high');
+            }
         }
 
         _resetPoolSfxRound(count=0){
@@ -26,7 +75,7 @@
                 return;
             }
             const deckCount=Math.max(1,state?.deckCount||1);
-            const baseLimit=deckCount*4+1;
+            const baseLimit=deckCount*5+1.5; // base threshold scales with number of decks, plus a small buffer to avoid triggering on normal early-game plays
             const highLimit=baseLimit*1.5;
             const prev=this._poolSfxPrevCount;
 
@@ -36,10 +85,12 @@
             if(crossedHigh){
                 // 冲突时优先高阈值音效
                 try{SFX.laugh2();}catch(e){}
+                this._setPoolPressure('high');
                 this._poolSfxTriggeredHigh=true;
                 this._poolSfxTriggeredBase=true;
             }else if(crossedBase){
                 try{SFX.shortjokerlaugh();}catch(e){}
+                this._setPoolPressure('base');
                 this._poolSfxTriggeredBase=true;
             }
 
@@ -328,6 +379,11 @@
 
         _onState(state){
             const prevPhase=this._prevPhase;
+            const ct=state?.tableCardCount||0;
+            if(ct===0&&this._poolVisualPrevCount>0){
+                this._clearPoolPressure();
+            }
+            this._poolVisualPrevCount=ct;
             // 新一轮（宣言阶段）重置触发器：每个宣言对应出牌周期只触发一次
             if(state.phase==='DECLARING'&&prevPhase!=='DECLARING'){
                 this._resetPoolSfxRound(state.tableCardCount||0);
@@ -337,6 +393,7 @@
                 this._poolSfxPrevCount=0;
                 this._poolSfxTriggeredBase=false;
                 this._poolSfxTriggeredHigh=false;
+                this._clearPoolPressure();
                 this._updateLobby(state);
                 const active=$$('.screen.active')[0]?.id;
                 if(!active||active==='screen-home')showScreen('lobby');
@@ -410,24 +467,49 @@
         _renderTable(s){
             const row=$('pool-cards-row');
             const ct=s.tableCardCount;
-            const pw=210, ph=60; // usable area inside pool
             const cw=40, ch=56; // card-sm dimensions
-            const minInX=3, maxInX=pw-cw-3;
-            const minInY=0, maxInY=ph-ch;
-            const overflowX=14, overflowY=10;
-            let h=''; const mx=Math.min(ct,24);
+            let h=''; 
+            
+            // Generate distinct visual layers based on card count to keep DOM manageable while looking full
+            // Up to ~50 cards we can render them all. If it goes extreme (e.g. 150+), 
+            // cap visually at 80 to save performance, but 80 is plenty to look scattered and thick.
+            const visualLimit = 80;
+            const mx=Math.min(ct, visualLimit); 
+
+            const rw=Math.max(220,row?.clientWidth||0);
+            const rh=Math.max(86,row?.clientHeight||0);
+            // 放牌范围：覆盖整张浅棕牌桌，允许轻微越界
+            // 底部额外放宽，让牌能更靠近文字区（文字层级仍在上方，不会被遮挡）
+            const spillX=12, spillTop=10, spillBottom=38;
+            const placeMinX=-spillX;
+            const placeMaxX=Math.max(placeMinX,rw-cw+spillX);
+            const placeMinY=-spillTop;
+            const placeMaxY=Math.max(placeMinY,rh-ch+spillBottom);
+
+            const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+
+            const centerX=(placeMinX+placeMaxX)/2;
+            const centerY=(placeMinY+placeMaxY)/2;
+            const radiusX=Math.max(10,(placeMaxX-placeMinX)/2);
+            const radiusY=Math.max(6,(placeMaxY-placeMinY)/2);
+            
             for(let i=0;i<mx;i++){
-                const rot=rng(-30,30);
-                let cx,cy;
-                const mostlyInside=Math.random()<0.84;
-                if(mostlyInside){
-                    cx=rng(minInX,maxInX);
-                    cy=rng(minInY,maxInY);
-                }else{
-                    const leftEdge=Math.random()<0.5;
-                    cx=leftEdge ? rng(-overflowX,minInX+2) : rng(maxInX-2,maxInX+overflowX);
-                    cy=rng(minInY-overflowY,maxInY+overflowY);
-                }
+                const rot=rng(-50,50);
+                const angle=Math.random()*Math.PI*2;
+                // 低开销重尾分布：多数在中心，少量远离中心，整体仍保持中间密四周疏
+                // core: 58%, mid: 30%, tail: 12%
+                const u=Math.random();
+                const radial = u<0.58
+                    ? Math.pow(Math.random(),1.95)
+                    : u<0.88
+                        ? Math.pow(Math.random(),0.8)
+                        : Math.min(1,0.78 + 0.22*Math.pow(Math.random(),0.22));
+                let cx=centerX+Math.cos(angle)*radiusX*radial+rng(-7,7);
+                let cy=centerY+Math.sin(angle)*radiusY*radial+rng(-5,5);
+
+                cx=clamp(cx,placeMinX,placeMaxX);
+                cy=clamp(cy,placeMinY,placeMaxY);
+                
                 let dk=0, accum=0;
                 for(const entry of (s.tablePlayLog||[])){
                     if(i<accum+entry.count){break;}
@@ -687,6 +769,7 @@
 
         // ─── Challenge result ───
         _onChResult(d){
+            this._clearPoolPressure();
             try{SFX.boxcrash();}catch(e){}
             const overlay=$('overlay-liar'), stamp=$('stamp-text');
             stamp.classList.remove('animate','honest');
@@ -924,6 +1007,8 @@
             this._poolSfxPrevCount=0;
             this._poolSfxTriggeredBase=false;
             this._poolSfxTriggeredHigh=false;
+            this._poolVisualPrevCount=0;
+            this._clearPoolPressure();
             $('btn-ffa-challenge').classList.remove('visible');
             $('overlay-challenge').classList.remove('active');
             $('overlay-liar').classList.remove('active');
