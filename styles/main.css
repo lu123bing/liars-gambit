@@ -151,6 +151,7 @@ body,html{
 .doodle-btn:nth-child(3n){transform:rotate(0.5deg)}
 .doodle-btn:hover{transform:translate(-2px,-2px) rotate(-0.5deg);box-shadow:8px 8px 0px var(--ink-black)}
 .doodle-btn:active{transform:translate(4px,4px) scale(.95) rotate(0deg)!important;box-shadow:2px 2px 0px var(--ink-black);background:#eee}
+.doodle-btn:focus-visible{outline:2px dashed var(--ink-black);outline-offset:4px}
 /* Add touch feedback for mobile */
 @media (hover: none) {
     .doodle-btn:active {
@@ -269,6 +270,7 @@ body,html{
     transition:transform .2s;box-shadow:1px 1px 0 rgba(0,0,0,.15);
 }
 .toggle-switch.active::after{transform:translateX(20px) rotate(15deg)}
+.toggle-switch:focus-visible{outline:2px dashed var(--ink-black);outline-offset:4px}
 .lobby-footer{margin-top:auto;padding:12px 0;width:100%;max-width:360px;position:relative;z-index:2;}
 .lobby-hint{text-align:center;font-size:.9rem;color:#999;margin-top:8px}
 
@@ -293,6 +295,7 @@ body,html{
     transform:rotate(-1deg);
 }
 .game-top-bar .bar-rules-btn:active{transform:scale(.92)}
+.game-top-bar .bar-rules-btn:focus-visible{outline:2px dashed var(--ink-black);outline-offset:4px}
 
 .game-header{
     display:flex;justify-content:space-between;align-items:center;
@@ -764,6 +767,7 @@ body,html{
     transform:rotate(2deg);
 }
 .rules-btn:active{transform:scale(.9) rotate(-8deg)}
+.rules-btn:focus-visible{outline:2px dashed var(--ink-black);outline-offset:4px}
 .lobby-rules-btn{
     display:inline-flex;align-items:center;gap:4px;padding:6px 14px;
     border:2px solid var(--ink-black);
@@ -775,6 +779,7 @@ body,html{
     box-shadow:2px 2px 0 rgba(0,0,0,.1);
 }
 .lobby-rules-btn:active{transform:scale(.95)}
+.lobby-rules-btn:focus-visible{outline:2px dashed var(--ink-black);outline-offset:4px}
 
 /* Rules modal */
 #modal-rules{z-index:60}

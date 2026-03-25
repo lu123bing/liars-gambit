@@ -25,33 +25,33 @@
         <div class="bg-suit" style="top: 80%; left: 25%; transform: rotate(-15deg) scale(1.4);">♠️</div>
         <div class="bg-suit suit-red" style="top: 85%; right: 28%; transform: rotate(10deg) scale(1.2);">♥️</div>
     </div>
-    <button class="rules-btn" onclick="app.showRules()" title="游戏规则">?</button>
+    <button class="rules-btn" onclick="app.showRules()" title="游戏规则" aria-label="游戏规则">?</button>
     <div class="home-card-deco wobble" id="home-joker">🃏<span class="home-liar-stamp" id="home-liar-stamp">LIAR!</span></div>
     <div class="home-title">骗子博弈</div>
     <div class="home-subtitle">Liar's Gambit</div>
-    <input type="text" id="input-name" class="input-sketch" placeholder="你叫什么名字?" maxlength="8" autocomplete="off">
+    <input type="text" id="input-name" class="input-sketch" placeholder="你叫什么名字?" maxlength="8" autocomplete="off" aria-label="玩家昵称">
     <div class="home-actions">
         <button class="doodle-btn btn-blue btn-wide" id="btn-create">✏️ 创建房间</button>
         <div style="color:#aaa;font-size:.9rem;">— 或者 —</div>
         <div class="home-join-row">
-            <input type="text" id="input-room-code" class="input-sketch" placeholder="房间号" maxlength="4" autocomplete="off">
+            <input type="text" id="input-room-code" class="input-sketch" placeholder="房间号" maxlength="4" autocomplete="off" aria-label="房间号">
             <button class="doodle-btn btn-green" id="btn-join">加入</button>
         </div>
     </div>
     <div class="home-net-setting">
         <div class="setting-row">
             <span class="setting-label">远程联机(非局域网)</span>
-            <div class="toggle-switch" id="toggle-remote-online" onclick="app.toggleRemoteOnline()"></div>
+            <div class="toggle-switch" id="toggle-remote-online" tabindex="0" role="switch" aria-checked="false" aria-label="开启远程联机" onclick="app.toggleRemoteOnline()" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault(); app.toggleRemoteOnline();}"></div>
         </div>
         <div class="home-net-tip">默认关闭：仅走 STUN; 开启后才会在失败时尝试 TURN 中继。注意: 仅在需要时才开启远程联机功能，以避免不必要的网络延迟。</div>
         <button class="doodle-btn btn-sm btn-wide" id="btn-toggle-turn-panel" style="margin-top:8px;">🛠️ 自定义 TURN 服务器</button>
         <div class="home-turn-panel hidden" id="turn-panel">
             <div style="font-size:.8rem;color:#666;">TURN URLs（每行一个）</div>
-            <textarea id="input-turn-urls" class="home-turn-input" rows="3" placeholder="turn:host:3478\nturns:host:5349?transport=tcp"></textarea>
+            <textarea id="input-turn-urls" class="home-turn-input" rows="3" placeholder="turn:host:3478\nturns:host:5349?transport=tcp" aria-label="TURN URLs"></textarea>
             <div style="font-size:.8rem;color:#666;margin-top:6px;">用户名</div>
-            <input id="input-turn-username" class="home-turn-input" placeholder="TURN username" autocomplete="off">
+            <input id="input-turn-username" class="home-turn-input" placeholder="TURN username" autocomplete="off" aria-label="TURN 用户名">
             <div style="font-size:.8rem;color:#666;margin-top:6px;">密码</div>
-            <input id="input-turn-credential" class="home-turn-input" placeholder="TURN credential" autocomplete="off">
+            <input id="input-turn-credential" class="home-turn-input" placeholder="TURN credential" autocomplete="off" aria-label="TURN 密码">
             <div class="home-turn-actions">
                 <button class="doodle-btn btn-blue" id="btn-save-turn">保存</button>
                 <button class="doodle-btn btn-red" id="btn-clear-turn">清空</button>
@@ -126,7 +126,7 @@
         </div>
         <div class="setting-row">
             <span class="setting-label">显示出牌记录</span>
-            <div class="toggle-switch active" id="toggle-play-log" onclick="app.togglePlayLog()"></div>
+            <div class="toggle-switch active" id="toggle-play-log" tabindex="0" role="switch" aria-checked="true" aria-label="显示出牌记录" onclick="app.togglePlayLog()" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault(); app.togglePlayLog();}"></div>
         </div>
     </div>
     <div class="lobby-footer">
