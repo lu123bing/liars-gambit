@@ -153,7 +153,12 @@
         }
 
         _applyRemoteOnlineToggleUI(){
-            $('toggle-remote-online')?.classList.toggle('active',!!NET_CONFIG.remoteOnlineEnabled);
+            const el=$('toggle-remote-online');
+            if(el){
+                const isOn=!!NET_CONFIG.remoteOnlineEnabled;
+                el.classList.toggle('active',isOn);
+                el.setAttribute('aria-checked', isOn.toString());
+            }
         }
 
         toggleRemoteOnline(){
@@ -347,7 +352,11 @@
             $('lobby-mode-seq')?.classList.toggle('selected',cm==='sequential');
             $('lobby-mode-ffa')?.classList.toggle('selected',cm==='freeforall');
             const sl=state.showPlayLog!==false;
-            $('toggle-play-log')?.classList.toggle('active',sl);
+            const toggleLog=$('toggle-play-log');
+            if(toggleLog){
+                toggleLog.classList.toggle('active',sl);
+                toggleLog.setAttribute('aria-checked', sl.toString());
+            }
             $('btn-start').disabled=ps.filter(p=>p.connected).length<2;
         }
 

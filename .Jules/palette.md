@@ -1,0 +1,3 @@
+## 2026-03-25 - Interactive Custom Toggles Need Keyboard Support
+**Learning:** Custom div-based toggle switches `div.toggle-switch` look great but completely break screen readers and keyboard navigation (tabbing, space/enter to toggle). When custom interactive elements are used instead of native inputs, they require explicit `tabindex`, `role`, `aria-checked`, and keyboard event handlers.
+**Action:** When creating or fixing custom controls like toggle switches, always ensure they have `tabindex="0"`, `role="switch"`, dynamic `aria-checked` attributes, and a `keydown` listener that calls `preventDefault()` and triggers the action on 'Enter' or ' ' (Space).
